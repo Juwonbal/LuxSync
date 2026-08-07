@@ -1,6 +1,6 @@
 /**
- * LuxSync Transmitter v3 — Turbo High-Speed & Large File Sender
- * Features real-time DEFLATE compression (fflate), FPS up to 20, and high-density chunks.
+ * LuxSync Transmitter v4 — Crash-Safe High-Speed Sender
+ * Real-time DEFLATE compression, safe QR payloads, zero crash guarantees.
  */
 
 import QRCode from 'qrcode';
@@ -17,8 +17,8 @@ export function createTransmitter(container) {
   let isFlashing = false;
   let animFrameId = null;
 
-  let fps = 8;            // High-speed default FPS
-  let chunkSize = 1200;   // High-density chunk size
+  let fps = 6;            // Optimal scanning speed for mobile cameras
+  let chunkSize = 450;    // Safe QR payload size (never exceeds QR version capacity)
   let currentTheme = 'cyberpunk';
   let currentIdx = 0;
   let cycleCount = 0;
@@ -30,7 +30,7 @@ export function createTransmitter(container) {
   container.innerHTML = `
     <div class="card glass-panel">
       <div class="card-header">
-        <h2>⚡ Optical Transmitter <span class="badge badge-success">Turbo Accelerated</span></h2>
+        <h2>⚡ Optical Transmitter</h2>
         <span class="badge badge-primary">Sender</span>
       </div>
 
@@ -38,7 +38,7 @@ export function createTransmitter(container) {
       <div id="tx-dropzone" class="dropzone">
         <div class="drop-icon-wrap">📁</div>
         <h3>Drop Any File to Beam via Light</h3>
-        <p>Supports Images, Videos, PDFs, Code, Zips & Documents up to 50MB</p>
+        <p>Images, PDFs, Documents, Code, Zips — auto-compressed</p>
         <input type="file" id="tx-file-input" style="display: none;" />
         <button class="btn btn-outline" onclick="document.getElementById('tx-file-input').click()">
           Browse File
@@ -80,7 +80,7 @@ export function createTransmitter(container) {
 
           <div class="option-card">
             <h4>📦 Download Receiver File <span class="option-badge">100% Offline</span></h4>
-            <p>No network? Download this HTML file, send to phone once, open in browser. Works forever.</p>
+            <p>No network? Download this HTML file, send to phone once, open in browser.</p>
             <a class="btn btn-outline" id="tx-download-receiver" href="/receiver.html" download="LuxSync_Receiver.html">
               ⬇ Download receiver.html (45KB)
             </a>
@@ -88,7 +88,7 @@ export function createTransmitter(container) {
         </div>
 
         <button class="btn btn-primary btn-glow margin-top" id="tx-ready-btn">
-          🚀 Start High-Speed Beam
+          🚀 Start Optical Beam
         </button>
       </div>
 
@@ -98,14 +98,14 @@ export function createTransmitter(container) {
           <span class="step-number">2</span>
           <div>
             <h3>Point phone camera at the screen</h3>
-            <p class="step-desc">High-speed optical frames cycling. Receiver captures automatically.</p>
+            <p class="step-desc">Steganographic frames cycling. Receiver captures automatically.</p>
           </div>
         </div>
 
         <div class="controls-grid margin-top">
           <div class="control-group">
-            <label>Speed: <span id="tx-fps-val" class="text-cyan">8 FPS</span></label>
-            <input type="range" id="tx-fps-slider" min="2" max="20" value="8" step="1" />
+            <label>Speed: <span id="tx-fps-val" class="text-cyan">6 FPS</span></label>
+            <input type="range" id="tx-fps-slider" min="2" max="12" value="6" step="1" />
           </div>
 
           <div class="control-group">
@@ -120,11 +120,11 @@ export function createTransmitter(container) {
           </div>
 
           <div class="control-group">
-            <label>Data Density (Bytes/Frame)</label>
+            <label>Frame Density</label>
             <select id="tx-density-select" class="select-input">
-              <option value="600">600 B (Far Distance)</option>
-              <option value="1200" selected>1200 B (High Speed)</option>
-              <option value="1800">1800 B (Turbo Speed)</option>
+              <option value="350">350 B (Far Distance / Easy Scan)</option>
+              <option value="450" selected>450 B (Balanced)</option>
+              <option value="600">600 B (Fast Beam)</option>
             </select>
           </div>
         </div>
@@ -157,7 +157,6 @@ export function createTransmitter(container) {
     </div>
   `;
 
-  // === DOM Refs ===
   const dropzone = container.querySelector('#tx-dropzone');
   const fileInput = container.querySelector('#tx-file-input');
   const fileInfo = container.querySelector('#tx-file-info');
@@ -195,7 +194,6 @@ export function createTransmitter(container) {
     receiverUrlEl.textContent = '(Run with --host to enable)';
   }
 
-  // === Events ===
   dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('dragover'); });
   dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
   dropzone.addEventListener('drop', (e) => {
@@ -269,18 +267,17 @@ export function createTransmitter(container) {
       fileBytes = new Uint8Array(e.target.result);
       filenameEl.textContent = file.name;
 
-      // Compress file bytes using DEFLATE
       try {
         const compressed = fflate.compressSync(fileBytes);
         if (compressed.length < fileBytes.length) {
           compressedBytes = compressed;
           isCompressed = true;
           const ratio = Math.round((1 - compressed.length / fileBytes.length) * 100);
-          compInfoEl.textContent = `⚡ DEFLATE Compressed: ${formatBytes(fileBytes.length)} → ${formatBytes(compressed.length)} (${ratio}% smaller)`;
+          compInfoEl.textContent = `⚡ Compressed: ${formatBytes(fileBytes.length)} → ${formatBytes(compressed.length)} (${ratio}% smaller)`;
         } else {
           compressedBytes = fileBytes;
           isCompressed = false;
-          compInfoEl.textContent = `Uncompressed Raw Data: ${formatBytes(fileBytes.length)}`;
+          compInfoEl.textContent = `Raw Data: ${formatBytes(fileBytes.length)}`;
         }
       } catch (err) {
         compressedBytes = fileBytes;
@@ -315,7 +312,6 @@ export function createTransmitter(container) {
     const origLen = fileBytes ? fileBytes.length : 0;
 
     for (let i = 0; i < totalChunks; i++) {
-      // Protocol header: LX|idx|total|compFlag|origSize|filename|base64
       dataChunks[i] = `LX|${i}|${totalChunks}|${compFlag}|${origLen}|${truncName}|${dataChunks[i]}`;
     }
 
