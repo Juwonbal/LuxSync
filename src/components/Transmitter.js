@@ -1,10 +1,10 @@
 /**
- * LuxSync Transmitter v2 — Standard QR Code Optical Sender
- * Encodes files into cycling QR codes readable by ANY phone's native scanner.
- * No app install, no custom protocol — universal compatibility.
+ * LuxSync Transmitter v2 — Universal QR & Generative Steganography Sender
+ * Encodes files into cycling QR codes & artistic steganographic canvas frames.
  */
 
 import QRCode from 'qrcode';
+import { ART_THEMES, renderSteganographicQR } from '../utils/steganography.js';
 
 export function createTransmitter(container) {
   let file = null;
@@ -16,12 +16,13 @@ export function createTransmitter(container) {
 
   let fps = 4;          // QR codes scan best at 3-5 fps
   let chunkSize = 600;  // bytes per chunk (raw)
+  let currentTheme = 'cyberpunk'; // Default steganography theme
   let currentIdx = 0;
   let cycleCount = 0;
   let framesSent = 0;
   let lastFrameTime = 0;
 
-  // Network URL for receiver page (populated on mount)
+  // Network URL for receiver page
   let receiverUrl = '';
 
   container.innerHTML = `
@@ -78,7 +79,7 @@ export function createTransmitter(container) {
           <!-- Option B: Download standalone HTML -->
           <div class="option-card">
             <h4>📦 Download Receiver File <span class="option-badge">Fully Offline</span></h4>
-            <p>No network at all? Download this HTML file, send it to the phone once (USB/AirDrop/email), then open it in Chrome or Safari. Works forever.</p>
+            <p>No network at all? Download this HTML file, send it to the phone once (USB/AirDrop/email), then open it in Chrome or Safari.</p>
             <a class="btn btn-outline" id="tx-download-receiver" href="/receiver.html" download="LuxSync_Receiver.html">
               ⬇ Download receiver.html (13KB)
             </a>
@@ -90,13 +91,13 @@ export function createTransmitter(container) {
         </button>
       </div>
 
-      <!-- Step 2: Flashing QR Codes -->
+      <!-- Step 2: Flashing QR Codes / Steganography -->
       <div id="tx-step2" class="step-section hidden">
         <div class="step-header">
           <span class="step-number">2</span>
           <div>
             <h3>Point phone camera at the screen</h3>
-            <p class="step-desc">QR codes will cycle. The receiver captures them automatically.</p>
+            <p class="step-desc">Steganographic art frames will cycle. The receiver captures them automatically.</p>
           </div>
         </div>
 
@@ -105,6 +106,18 @@ export function createTransmitter(container) {
             <label>Speed: <span id="tx-fps-val" class="text-cyan">4 FPS</span></label>
             <input type="range" id="tx-fps-slider" min="1" max="10" value="4" step="1" />
           </div>
+
+          <div class="control-group">
+            <label>🎨 Steganography Theme</label>
+            <select id="tx-theme-select" class="select-input">
+              <option value="standard">Standard B&W QR</option>
+              <option value="cyberpunk" selected>⚡ Cyberpunk Circuitry</option>
+              <option value="bioluminescent">🌌 Bioluminescent Grid</option>
+              <option value="matrix">💚 Matrix Code Rain</option>
+              <option value="mosaic">🎨 Neon Stencil Mosaic</option>
+            </select>
+          </div>
+
           <div class="control-group">
             <label>QR Density</label>
             <select id="tx-density-select" class="select-input">
@@ -115,7 +128,7 @@ export function createTransmitter(container) {
           </div>
         </div>
 
-        <!-- QR Display Canvas -->
+        <!-- Steganographic QR Display Canvas -->
         <div class="qr-flash-wrapper margin-top">
           <canvas id="tx-flash-canvas" width="460" height="460"></canvas>
           <div class="qr-flash-label">
@@ -158,9 +171,9 @@ export function createTransmitter(container) {
 
   const step2 = container.querySelector('#tx-step2');
   const flashCanvas = container.querySelector('#tx-flash-canvas');
-  const flashCtx = flashCanvas.getContext('2d');
   const fpsSlider = container.querySelector('#tx-fps-slider');
   const fpsVal = container.querySelector('#tx-fps-val');
+  const themeSelect = container.querySelector('#tx-theme-select');
   const densitySelect = container.querySelector('#tx-density-select');
   const chunkLabel = container.querySelector('#tx-chunk-label');
   const cycleLabel = container.querySelector('#tx-cycle-label');
@@ -172,7 +185,7 @@ export function createTransmitter(container) {
   const teleCycles = container.querySelector('#tx-tele-cycles');
   const teleSize = container.querySelector('#tx-tele-size');
 
-  // === Derive receiver URL from current page ===
+  // Derive receiver URL
   try {
     const loc = window.location;
     receiverUrl = `${loc.protocol}//${loc.hostname}:${loc.port}/receiver.html`;
@@ -202,6 +215,11 @@ export function createTransmitter(container) {
   fpsSlider.addEventListener('input', (e) => {
     fps = parseInt(e.target.value);
     fpsVal.textContent = `${fps} FPS`;
+  });
+
+  themeSelect.addEventListener('change', (e) => {
+    currentTheme = e.target.value;
+    if (dataChunks.length) renderCurrentQR();
   });
 
   densitySelect.addEventListener('change', (e) => {
@@ -243,7 +261,6 @@ export function createTransmitter(container) {
     }
   });
 
-  // === File Handling ===
   function handleFile(f) {
     file = f;
     const reader = new FileReader();
@@ -256,18 +273,13 @@ export function createTransmitter(container) {
       step1.classList.remove('hidden');
       step2.classList.add('hidden');
 
-      // Generate bootstrap QR code
       generateBootstrapQR();
     };
     reader.readAsArrayBuffer(file);
   }
 
   function prepareChunks() {
-    // Convert raw bytes to base64
     const fullBase64 = uint8ToBase64(fileBytes);
-
-    // Split base64 into chunks of ~chunkSize characters
-    // Each char of base64 = 6 bits, so chunkSize bytes ≈ chunkSize * 4/3 base64 chars
     const b64ChunkLen = Math.ceil(chunkSize * 4 / 3);
     dataChunks = [];
 
@@ -276,16 +288,13 @@ export function createTransmitter(container) {
     }
 
     totalChunks = dataChunks.length;
-
-    // Truncate filename for QR payload
     const truncName = file.name.length > 24 ? file.name.slice(0, 24) : file.name;
 
-    // Precompute QR payloads
     for (let i = 0; i < totalChunks; i++) {
       dataChunks[i] = `LX|${i}|${totalChunks}|${truncName}|${dataChunks[i]}`;
     }
 
-    filesizeEl.textContent = `${formatBytes(fileBytes.length)} → ${totalChunks} QR codes`;
+    filesizeEl.textContent = `${formatBytes(fileBytes.length)} → ${totalChunks} frames`;
     teleTotal.textContent = totalChunks;
     teleSize.textContent = formatBytes(fileBytes.length);
 
@@ -307,7 +316,6 @@ export function createTransmitter(container) {
     }
   }
 
-  // === Flashing Loop ===
   function startFlashing() {
     if (!dataChunks.length) return;
     isFlashing = true;
@@ -337,7 +345,7 @@ export function createTransmitter(container) {
 
       framesSent++;
       teleSent.textContent = framesSent;
-      chunkLabel.textContent = `Chunk ${currentIdx} / ${totalChunks}`;
+      chunkLabel.textContent = `Frame ${currentIdx} / ${totalChunks}`;
       cycleLabel.textContent = `Cycle ${cycleCount + 1}`;
     }
 
@@ -345,28 +353,15 @@ export function createTransmitter(container) {
   }
 
   async function renderCurrentQR() {
+    if (!dataChunks.length) return;
     const payload = dataChunks[currentIdx];
     try {
-      // Clear canvas
-      flashCtx.fillStyle = '#ffffff';
-      flashCtx.fillRect(0, 0, flashCanvas.width, flashCanvas.height);
-
-      await QRCode.toCanvas(flashCanvas, payload, {
-        width: flashCanvas.width,
-        margin: 3,
-        color: { dark: '#000000', light: '#ffffff' },
-        errorCorrectionLevel: 'L'  // Low ECC = max data density
-      });
+      await renderSteganographicQR(flashCanvas, payload, currentTheme);
     } catch (e) {
-      // If payload too large for QR, show error
-      flashCtx.fillStyle = '#ff0033';
-      flashCtx.font = '14px sans-serif';
-      flashCtx.textAlign = 'center';
-      flashCtx.fillText('QR too dense — reduce density', flashCanvas.width / 2, flashCanvas.height / 2);
+      console.warn('Steganography render error:', e);
     }
   }
 
-  // === Utilities ===
   function uint8ToBase64(uint8) {
     let binary = '';
     const len = uint8.length;
