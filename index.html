@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LuxSync — Air-Gapped Optical File Transfer</title>
+    <meta name="description" content="Transfer files between devices using only light. No WiFi, no Bluetooth, no cables, no internet. Your screen flashes QR codes, the phone camera reads them." />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div class="logo">
+          <div class="logo-icon">⚡</div>
+          <div>
+            <h1>LuxSync</h1>
+            <div class="tagline">Air-Gapped File Transfer via Light</div>
+          </div>
+        </div>
+
+        <nav class="nav-tabs">
+          <button class="tab-btn active" data-tab="transmitter">
+            📡 Sender
+          </button>
+          <button class="tab-btn" data-tab="receiver">
+            📷 Receiver
+          </button>
+        </nav>
+      </header>
+
+      <main id="app"></main>
+
+      <footer class="glass-panel margin-top">
+        <h4>💡 How It Works</h4>
+        <p>
+          <strong>1.</strong> Drop a file on the Sender. &nbsp;
+          <strong>2.</strong> Scan the setup QR with any phone to get the receiver. &nbsp;
+          <strong>3.</strong> Point phone camera at the screen. &nbsp;
+          <strong>4.</strong> Data beams via light — no network, no app, no cables. Air-gapped by physics.
+        </p>
+      </footer>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
