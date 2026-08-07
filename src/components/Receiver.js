@@ -1,8 +1,10 @@
 /**
- * LuxSync Receiver Component (Web Version)
- * For users who access the receiver via the same network.
- * Points them to the standalone receiver or embeds scanning directly.
+ * LuxSync Receiver Component (Universal Web Version)
+ * Uses native BarcodeDetector if available, and automatically falls back to jsQR
+ * so it works on 100% of browsers (Chrome, Safari, Firefox, Edge, Brave, Mobile & Desktop).
  */
+
+import jsQR from 'jsqr';
 
 export function createReceiver(container) {
   let stream = null;
@@ -23,10 +25,6 @@ export function createReceiver(container) {
       <div class="card-header">
         <h2>📷 Optical Receiver</h2>
         <span class="badge badge-success">Receiver</span>
-      </div>
-
-      <div id="rx-compat-check" class="compat-banner hidden">
-        ⚠ Your browser does not support BarcodeDetector. Please use <strong>Chrome 83+</strong> or <strong>Safari 16.4+</strong>.
       </div>
 
       <div id="rx-status-banner" class="status-banner status-waiting">
@@ -100,7 +98,6 @@ export function createReceiver(container) {
 
   const video = container.querySelector('#rx-video');
   const scanLine = container.querySelector('#rx-scan-line');
-  const compatCheck = container.querySelector('#rx-compat-check');
   const statusBanner = container.querySelector('#rx-status-banner');
   const progressFill = container.querySelector('#rx-progress-fill');
   const progressLabel = container.querySelector('#rx-progress-label');
@@ -114,9 +111,13 @@ export function createReceiver(container) {
   const stopBtn = container.querySelector('#rx-stop-btn');
   const downloadBtn = container.querySelector('#rx-download-btn');
 
-  // Check BarcodeDetector support
-  if (!('BarcodeDetector' in window)) {
-    compatCheck.classList.remove('hidden');
+  // Try initializing native BarcodeDetector if available
+  if ('BarcodeDetector' in window) {
+    try {
+      detector = new BarcodeDetector({ formats: ['qr_code'] });
+    } catch (e) {
+      detector = null;
+    }
   }
 
   const scanCanvas = document.createElement('canvas');
@@ -126,18 +127,6 @@ export function createReceiver(container) {
   stopBtn.addEventListener('click', stopCamera);
 
   async function startCamera() {
-    if (!('BarcodeDetector' in window)) {
-      setStatus('BarcodeDetector not supported. Use Chrome 83+ or Safari 16.4+', 'status-error');
-      return;
-    }
-
-    try {
-      detector = new BarcodeDetector({ formats: ['qr_code'] });
-    } catch (e) {
-      setStatus('Could not create QR detector: ' + e.message, 'status-error');
-      return;
-    }
-
     try {
       stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
@@ -152,7 +141,7 @@ export function createReceiver(container) {
       downloadBtn.classList.add('hidden');
       setStatus('Scanning... Point camera at sender screen', 'status-scanning');
 
-      // Reset
+      // Reset transfer state
       chunks = {}; totalChunks = 0; receivedCount = 0;
       totalScans = 0; dupeScans = 0; transferComplete = false;
       progressFill.style.width = '0%';
@@ -177,23 +166,50 @@ export function createReceiver(container) {
   }
 
   async function scanLoop() {
-    if (!scanning || !detector) return;
+    if (!scanning) return;
+
     if (video.readyState >= video.HAVE_ENOUGH_DATA) {
       scanCanvas.width = video.videoWidth;
       scanCanvas.height = video.videoHeight;
       scanCtx.drawImage(video, 0, 0);
-      try {
-        const results = await detector.detect(scanCanvas);
-        for (const qr of results) {
-          if (qr.rawValue && qr.rawValue.startsWith('LX|')) {
+
+      let foundQR = false;
+
+      // 1. Try Native BarcodeDetector (Hardware Accelerated)
+      if (detector) {
+        try {
+          const results = await detector.detect(scanCanvas);
+          for (const qr of results) {
+            if (qr.rawValue && qr.rawValue.startsWith('LX|')) {
+              foundQR = true;
+              totalScans++;
+              statScanned.textContent = totalScans;
+              processQR(qr.rawValue);
+            }
+          }
+        } catch (e) {}
+      }
+
+      // 2. Universal Fallback: jsQR Engine
+      if (!foundQR) {
+        try {
+          const imageData = scanCtx.getImageData(0, 0, scanCanvas.width, scanCanvas.height);
+          const code = jsQR(imageData.data, imageData.width, imageData.height, {
+            inversionAttempts: 'dontInvert'
+          });
+
+          if (code && code.data && code.data.startsWith('LX|')) {
             totalScans++;
             statScanned.textContent = totalScans;
-            processQR(qr.rawValue);
+            processQR(code.data);
           }
-        }
-      } catch (e) {}
+        } catch (e) {}
+      }
     }
-    if (scanning && !transferComplete) requestAnimationFrame(scanLoop);
+
+    if (scanning && !transferComplete) {
+      requestAnimationFrame(scanLoop);
+    }
   }
 
   function processQR(raw) {
@@ -213,7 +229,11 @@ export function createReceiver(container) {
       buildGrid(total);
     }
 
-    if (chunks[idx] !== undefined) { dupeScans++; statDupes.textContent = dupeScans; return; }
+    if (chunks[idx] !== undefined) {
+      dupeScans++;
+      statDupes.textContent = dupeScans;
+      return;
+    }
 
     chunks[idx] = data;
     receivedCount++;
