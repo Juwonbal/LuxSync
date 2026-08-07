@@ -206,6 +206,7 @@ export function createReceiver(container) {
   }
 
   function processQR(raw) {
+    if (!raw || !raw.startsWith('LX|')) return;
     const parts = raw.split('|');
     if (parts.length < 5) return;
 
@@ -217,12 +218,12 @@ export function createReceiver(container) {
       isCompressed = parts[3] === '1';
       originalSize = parseInt(parts[4], 10);
       name = parts[5];
-      data = parts[6];
+      data = parts.slice(6).join('|');
     } else {
       idx = parseInt(parts[1], 10);
       total = parseInt(parts[2], 10);
       name = parts[3];
-      data = parts[4];
+      data = parts.slice(4).join('|');
     }
 
     if (isNaN(idx) || isNaN(total) || total <= 0) return;
