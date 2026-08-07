@@ -1,10 +1,9 @@
 /**
- * LuxSync Receiver Component (Universal Web Version)
- * Uses native BarcodeDetector if available, and automatically falls back to jsQR
- * so it works on 100% of browsers (Chrome, Safari, Firefox, Edge, Brave, Mobile & Desktop).
+ * LuxSync Receiver Component (Web Version with fflate Decompression)
  */
 
 import jsQR from 'jsqr';
+import * as fflate from 'fflate';
 
 export function createReceiver(container) {
   let stream = null;
@@ -16,6 +15,8 @@ export function createReceiver(container) {
   let totalChunks = 0;
   let receivedCount = 0;
   let fileName = 'received_file';
+  let isCompressed = false;
+  let originalSize = 0;
   let totalScans = 0;
   let dupeScans = 0;
   let transferComplete = false;
@@ -23,7 +24,7 @@ export function createReceiver(container) {
   container.innerHTML = `
     <div class="card glass-panel">
       <div class="card-header">
-        <h2>📷 Optical Receiver</h2>
+        <h2>📷 Optical Receiver <span class="badge badge-success">Turbo Ready</span></h2>
         <span class="badge badge-success">Receiver</span>
       </div>
 
@@ -111,13 +112,8 @@ export function createReceiver(container) {
   const stopBtn = container.querySelector('#rx-stop-btn');
   const downloadBtn = container.querySelector('#rx-download-btn');
 
-  // Try initializing native BarcodeDetector if available
   if ('BarcodeDetector' in window) {
-    try {
-      detector = new BarcodeDetector({ formats: ['qr_code'] });
-    } catch (e) {
-      detector = null;
-    }
+    try { detector = new BarcodeDetector({ formats: ['qr_code'] }); } catch (e) {}
   }
 
   const scanCanvas = document.createElement('canvas');
@@ -141,7 +137,6 @@ export function createReceiver(container) {
       downloadBtn.classList.add('hidden');
       setStatus('Scanning... Point camera at sender screen', 'status-scanning');
 
-      // Reset transfer state
       chunks = {}; totalChunks = 0; receivedCount = 0;
       totalScans = 0; dupeScans = 0; transferComplete = false;
       progressFill.style.width = '0%';
@@ -175,7 +170,6 @@ export function createReceiver(container) {
 
       let foundQR = false;
 
-      // 1. Try Native BarcodeDetector (Hardware Accelerated)
       if (detector) {
         try {
           const results = await detector.detect(scanCanvas);
@@ -190,7 +184,6 @@ export function createReceiver(container) {
         } catch (e) {}
       }
 
-      // 2. Universal Fallback: jsQR Engine
       if (!foundQR) {
         try {
           const imageData = scanCtx.getImageData(0, 0, scanCanvas.width, scanCanvas.height);
@@ -215,17 +208,30 @@ export function createReceiver(container) {
   function processQR(raw) {
     const parts = raw.split('|');
     if (parts.length < 5) return;
-    const idx = parseInt(parts[1], 10);
-    const total = parseInt(parts[2], 10);
-    const name = parts[3];
-    const data = parts[4];
+
+    let idx, total, name, data;
+
+    if (parts.length >= 7) {
+      idx = parseInt(parts[1], 10);
+      total = parseInt(parts[2], 10);
+      isCompressed = parts[3] === '1';
+      originalSize = parseInt(parts[4], 10);
+      name = parts[5];
+      data = parts[6];
+    } else {
+      idx = parseInt(parts[1], 10);
+      total = parseInt(parts[2], 10);
+      name = parts[3];
+      data = parts[4];
+    }
+
     if (isNaN(idx) || isNaN(total) || total <= 0) return;
 
     if (totalChunks === 0) {
       totalChunks = total;
       fileName = name || 'received_file';
       statFile.textContent = fileName;
-      setStatus('Receiving data via light...', 'status-receiving');
+      setStatus('Receiving data stream via light...', 'status-receiving');
       buildGrid(total);
     }
 
@@ -237,12 +243,12 @@ export function createReceiver(container) {
 
     chunks[idx] = data;
     receivedCount++;
-    if (navigator.vibrate) navigator.vibrate(30);
+    if (navigator.vibrate) navigator.vibrate(20);
 
     const pct = Math.floor((receivedCount / totalChunks) * 100);
     progressFill.style.width = pct + '%';
     progressPct.textContent = pct + '%';
-    progressLabel.textContent = `Chunk ${receivedCount} of ${totalChunks}`;
+    progressLabel.textContent = `Frame ${receivedCount} of ${totalChunks}`;
     statChunks.textContent = `${receivedCount} / ${totalChunks}`;
 
     const cell = document.getElementById('rxcg-' + idx);
@@ -253,7 +259,7 @@ export function createReceiver(container) {
 
   function buildGrid(total) {
     chunkGrid.innerHTML = '';
-    const display = Math.min(total, 200);
+    const display = Math.min(total, 300);
     for (let i = 0; i < display; i++) {
       const cell = document.createElement('div');
       cell.className = 'chunk-cell';
@@ -265,18 +271,23 @@ export function createReceiver(container) {
   function finishTransfer() {
     transferComplete = true;
     stopCamera();
-    setStatus('✅ File fully received via light!', 'status-done');
+    setStatus('✅ File received! Decompressing...', 'status-done');
     progressFill.style.width = '100%';
     progressPct.textContent = '100%';
-    progressLabel.textContent = 'Transfer complete!';
+    progressLabel.textContent = 'Decompressing file...';
 
     let fullBase64 = '';
     for (let i = 0; i < totalChunks; i++) fullBase64 += chunks[i] || '';
 
     try {
       const bin = atob(fullBase64);
-      const bytes = new Uint8Array(bin.length);
+      let bytes = new Uint8Array(bin.length);
       for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+
+      if (isCompressed && fflate && fflate.decompressSync) {
+        bytes = fflate.decompressSync(bytes);
+      }
+
       const blob = new Blob([bytes]);
       const url = URL.createObjectURL(blob);
       downloadBtn.href = url;
@@ -284,7 +295,7 @@ export function createReceiver(container) {
       downloadBtn.classList.remove('hidden');
       if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
     } catch (e) {
-      setStatus('Error decoding: ' + e.message, 'status-error');
+      setStatus('Error decompressing: ' + e.message, 'status-error');
     }
   }
 

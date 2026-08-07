@@ -2,13 +2,14 @@ const fs = require('fs');
 const path = require('path');
 
 const jsQRMin = fs.readFileSync(path.join(__dirname, '../public/jsQR.min.js'), 'utf8');
+const fflateMin = fs.readFileSync(path.join(__dirname, '../public/fflate.min.js'), 'utf8');
 
 const htmlContent = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>LuxSync Receiver</title>
+  <title>LuxSync High-Speed Receiver</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap');
 
@@ -215,17 +216,19 @@ const htmlContent = `<!DOCTYPE html>
     }
   </style>
   <script>
-  // Embedded jsQR Library Engine
+  // Embedded jsQR Engine
   ${jsQRMin}
+  // Embedded fflate Decompression Engine
+  ${fflateMin}
   </script>
 </head>
 <body>
 
   <div class="logo">
     <div class="logo-icon">⚡</div>
-    <h1>LuxSync</h1>
+    <h1>LuxSync Turbo</h1>
   </div>
-  <p class="subtitle">Air-Gapped Optical File Receiver — No Internet Required</p>
+  <p class="subtitle">Air-Gapped High-Speed Receiver — Compression Accelerated</p>
 
   <div class="card">
     <div id="status-banner" class="status-waiting">
@@ -283,7 +286,7 @@ const htmlContent = `<!DOCTYPE html>
   <!-- Celebration Overlay -->
   <div id="celebration">
     <h2>🎉 Transfer Complete!</h2>
-    <p>File received via light. Zero network used.</p>
+    <p>File decompressed & received via light.</p>
     <p class="file-name" id="cel-filename"></p>
     <a class="btn btn-download" id="cel-download" style="max-width:300px">
       💾 Save File
@@ -317,6 +320,8 @@ const htmlContent = `<!DOCTYPE html>
     let totalChunks = 0;
     let receivedCount = 0;
     let fileName = 'received_file';
+    let isCompressed = false;
+    let originalSize = 0;
     let totalScans = 0;
     let dupeScans = 0;
     let transferComplete = false;
@@ -390,7 +395,6 @@ const htmlContent = `<!DOCTYPE html>
 
         let foundQR = false;
 
-        // 1. Try native BarcodeDetector if available
         if (detector) {
           try {
             const results = await detector.detect(scanCanvas);
@@ -405,7 +409,6 @@ const htmlContent = `<!DOCTYPE html>
           } catch (e) {}
         }
 
-        // 2. Universal Fallback: jsQR engine (runs on ALL phones/browsers!)
         if (!foundQR && typeof jsQR === 'function') {
           try {
             const imageData = scanCtx.getImageData(0, 0, scanCanvas.width, scanCanvas.height);
@@ -427,13 +430,25 @@ const htmlContent = `<!DOCTYPE html>
     }
 
     function processQRData(raw) {
+      // Supports LX|idx|total|name|base64 OR LX|idx|total|compFlag|origSize|name|base64
       const parts = raw.split('|');
       if (parts.length < 5) return;
 
-      const idx = parseInt(parts[1], 10);
-      const total = parseInt(parts[2], 10);
-      const name = parts[3];
-      const data = parts[4];
+      let idx, total, name, data;
+
+      if (parts.length >= 7) {
+        idx = parseInt(parts[1], 10);
+        total = parseInt(parts[2], 10);
+        isCompressed = parts[3] === '1';
+        originalSize = parseInt(parts[4], 10);
+        name = parts[5];
+        data = parts[6];
+      } else {
+        idx = parseInt(parts[1], 10);
+        total = parseInt(parts[2], 10);
+        name = parts[3];
+        data = parts[4];
+      }
 
       if (isNaN(idx) || isNaN(total) || total <= 0) return;
 
@@ -441,7 +456,7 @@ const htmlContent = `<!DOCTYPE html>
         totalChunks = total;
         fileName = name || 'received_file';
         statFile.textContent = fileName;
-        setStatus('Receiving data via light...', 'status-receiving');
+        setStatus('Receiving high-speed data stream...', 'status-receiving');
         buildChunkGrid(total);
       }
 
@@ -454,12 +469,12 @@ const htmlContent = `<!DOCTYPE html>
       chunks[idx] = data;
       receivedCount++;
 
-      if (navigator.vibrate) navigator.vibrate(30);
+      if (navigator.vibrate) navigator.vibrate(20);
 
       const pct = Math.floor((receivedCount / totalChunks) * 100);
       progressFill.style.width = pct + '%';
       progressPct.textContent = pct + '%';
-      progressLabel.textContent = \`Receiving chunk \${receivedCount} of \${totalChunks}\`;
+      progressLabel.textContent = \`Receiving frame \${receivedCount} of \${totalChunks}\`;
       statChunks.textContent = \`\${receivedCount} / \${totalChunks}\`;
 
       const cell = document.getElementById('cg-' + idx);
@@ -472,7 +487,7 @@ const htmlContent = `<!DOCTYPE html>
 
     function buildChunkGrid(total) {
       chunkGrid.innerHTML = '';
-      const display = Math.min(total, 200);
+      const display = Math.min(total, 300);
       for (let i = 0; i < display; i++) {
         const cell = document.createElement('div');
         cell.className = 'chunk-cell';
@@ -485,10 +500,10 @@ const htmlContent = `<!DOCTYPE html>
       transferComplete = true;
       stopCamera();
 
-      setStatus('✅ File fully received via light!', 'status-done');
+      setStatus('✅ File fully received! Decompressing...', 'status-done');
       progressFill.style.width = '100%';
       progressPct.textContent = '100%';
-      progressLabel.textContent = 'Transfer complete!';
+      progressLabel.textContent = 'Decompressing file...';
 
       let fullBase64 = '';
       for (let i = 0; i < totalChunks; i++) {
@@ -497,9 +512,14 @@ const htmlContent = `<!DOCTYPE html>
 
       try {
         const binaryStr = atob(fullBase64);
-        const bytes = new Uint8Array(binaryStr.length);
+        let bytes = new Uint8Array(binaryStr.length);
         for (let i = 0; i < binaryStr.length; i++) {
           bytes[i] = binaryStr.charCodeAt(i);
+        }
+
+        // Decompress if compressed
+        if (isCompressed && typeof fflate !== 'undefined' && fflate.decompressSync) {
+          bytes = fflate.decompressSync(bytes);
         }
 
         const blob = new Blob([bytes]);
@@ -516,7 +536,7 @@ const htmlContent = `<!DOCTYPE html>
 
         if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
       } catch (e) {
-        setStatus('⚠ Error decoding file: ' + e.message, 'status-error');
+        setStatus('⚠ Decompression error: ' + e.message, 'status-error');
       }
     }
 
@@ -537,4 +557,4 @@ const htmlContent = `<!DOCTYPE html>
 `;
 
 fs.writeFileSync(path.join(__dirname, '../public/receiver.html'), htmlContent);
-console.log('Successfully generated self-contained receiver.html with embedded jsQR engine!');
+console.log('Successfully generated Turbo receiver.html with embedded fflate compression engine!');
