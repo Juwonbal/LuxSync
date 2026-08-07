@@ -352,11 +352,11 @@ export function createTransmitter(container) {
     animFrameId = requestAnimationFrame(loop);
   }
 
-  async function renderCurrentQR() {
+  function renderCurrentQR() {
     if (!dataChunks.length) return;
     const payload = dataChunks[currentIdx];
     try {
-      await renderSteganographicQR(flashCanvas, payload, currentTheme);
+      renderSteganographicQR(flashCanvas, payload, currentTheme);
     } catch (e) {
       console.warn('Steganography render error:', e);
     }
