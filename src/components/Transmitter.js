@@ -1,6 +1,6 @@
 /**
- * LuxSync Transmitter v4 — Crash-Safe High-Speed Sender
- * Real-time DEFLATE compression, safe QR payloads, zero crash guarantees.
+ * LuxSync Transmitter v5 — Fast Steganography Sender
+ * Features real-time DEFLATE compression, up to 18 FPS, 800B chunk density.
  */
 
 import QRCode from 'qrcode';
@@ -17,8 +17,8 @@ export function createTransmitter(container) {
   let isFlashing = false;
   let animFrameId = null;
 
-  let fps = 6;            // Optimal scanning speed for mobile cameras
-  let chunkSize = 450;    // Safe QR payload size (never exceeds QR version capacity)
+  let fps = 10;           // Fast scanning FPS
+  let chunkSize = 800;    // High-speed chunk size
   let currentTheme = 'cyberpunk';
   let currentIdx = 0;
   let cycleCount = 0;
@@ -30,7 +30,7 @@ export function createTransmitter(container) {
   container.innerHTML = `
     <div class="card glass-panel">
       <div class="card-header">
-        <h2>⚡ Optical Transmitter</h2>
+        <h2>⚡ Optical Transmitter <span class="badge badge-success">Turbo Speed</span></h2>
         <span class="badge badge-primary">Sender</span>
       </div>
 
@@ -88,7 +88,7 @@ export function createTransmitter(container) {
         </div>
 
         <button class="btn btn-primary btn-glow margin-top" id="tx-ready-btn">
-          🚀 Start Optical Beam
+          🚀 Start High-Speed Beam
         </button>
       </div>
 
@@ -98,14 +98,14 @@ export function createTransmitter(container) {
           <span class="step-number">2</span>
           <div>
             <h3>Point phone camera at the screen</h3>
-            <p class="step-desc">Steganographic frames cycling. Receiver captures automatically.</p>
+            <p class="step-desc">Steganographic art frames cycling. Receiver captures automatically.</p>
           </div>
         </div>
 
         <div class="controls-grid margin-top">
           <div class="control-group">
-            <label>Speed: <span id="tx-fps-val" class="text-cyan">6 FPS</span></label>
-            <input type="range" id="tx-fps-slider" min="2" max="12" value="6" step="1" />
+            <label>Speed: <span id="tx-fps-val" class="text-cyan">10 FPS</span></label>
+            <input type="range" id="tx-fps-slider" min="4" max="18" value="10" step="1" />
           </div>
 
           <div class="control-group">
@@ -122,9 +122,9 @@ export function createTransmitter(container) {
           <div class="control-group">
             <label>Frame Density</label>
             <select id="tx-density-select" class="select-input">
-              <option value="350">350 B (Far Distance / Easy Scan)</option>
-              <option value="450" selected>450 B (Balanced)</option>
-              <option value="600">600 B (Fast Beam)</option>
+              <option value="450">450 B (Easy Scan)</option>
+              <option value="800" selected>800 B (Fast Beam)</option>
+              <option value="1200">1200 B (Turbo Max)</option>
             </select>
           </div>
         </div>
@@ -273,7 +273,7 @@ export function createTransmitter(container) {
           compressedBytes = compressed;
           isCompressed = true;
           const ratio = Math.round((1 - compressed.length / fileBytes.length) * 100);
-          compInfoEl.textContent = `⚡ Compressed: ${formatBytes(fileBytes.length)} → ${formatBytes(compressed.length)} (${ratio}% smaller)`;
+          compInfoEl.textContent = `⚡ DEFLATE Compressed: ${formatBytes(fileBytes.length)} → ${formatBytes(compressed.length)} (${ratio}% smaller)`;
         } else {
           compressedBytes = fileBytes;
           isCompressed = false;
