@@ -1,7 +1,7 @@
 /**
- * LuxSync Receiver Component v6 (High-Speed & Ultra-Reliable)
- * Features downscaled 640p frame pipeline for <10ms QR recognition,
- * dual BarcodeDetector + jsQR engine, live progress grid, and fflate decompression.
+ * LuxSync Receiver Component v7
+ * Real-time HUD tracking overlay, 640p mobile scanning pipeline,
+ * dual BarcodeDetector + jsQR engine, audio/haptic feedback, fflate decompression.
  */
 
 import jsQR from 'jsqr';
@@ -26,7 +26,7 @@ export function createReceiver(container) {
   container.innerHTML = `
     <div class="card glass-panel">
       <div class="card-header">
-        <h2>📷 Optical Receiver <span class="badge badge-success">High Reliability</span></h2>
+        <h2>📷 Optical Receiver <span class="badge badge-success">Live HUD</span></h2>
         <span class="badge badge-success">Receiver</span>
       </div>
 
@@ -34,11 +34,11 @@ export function createReceiver(container) {
         Tap "Start Camera" and point at the sender screen
       </div>
 
-      <!-- Camera Feed -->
+      <!-- Camera Feed with HUD Overlay -->
       <div class="camera-wrap margin-top">
         <video id="rx-video" autoplay playsinline muted></video>
+        <canvas id="rx-hud-canvas" class="hud-canvas-overlay"></canvas>
         <div class="scan-line" id="rx-scan-line"></div>
-        <div class="crosshair-overlay"></div>
       </div>
 
       <!-- Progress -->
@@ -100,6 +100,8 @@ export function createReceiver(container) {
   `;
 
   const video = container.querySelector('#rx-video');
+  const hudCanvas = container.querySelector('#rx-hud-canvas');
+  const hudCtx = hudCanvas.getContext('2d');
   const scanLine = container.querySelector('#rx-scan-line');
   const statusBanner = container.querySelector('#rx-status-banner');
   const progressFill = container.querySelector('#rx-progress-fill');
@@ -169,8 +171,7 @@ export function createReceiver(container) {
   async function scanLoop() {
     if (!scanning) return;
 
-    if (video.readyState >= video.HAVE_ENOUGH_DATA) {
-      // Downscale to 640px for ultra-fast <10ms QR detection on mobile CPUs
+    if (video.readyState >= video.HAVE_ENOUGH_DATA && video.videoWidth > 0) {
       const maxDim = 640;
       let w = video.videoWidth;
       let h = video.videoHeight;
@@ -182,9 +183,13 @@ export function createReceiver(container) {
       scanCanvas.height = h;
       scanCtx.drawImage(video, 0, 0, w, h);
 
+      hudCanvas.width = video.videoWidth;
+      hudCanvas.height = video.videoHeight;
+      hudCtx.clearRect(0, 0, hudCanvas.width, hudCanvas.height);
+
       let foundQR = false;
 
-      // 1. Try Hardware-Accelerated BarcodeDetector
+      // 1. Hardware BarcodeDetector
       if (detector) {
         try {
           const results = await detector.detect(scanCanvas);
@@ -193,13 +198,14 @@ export function createReceiver(container) {
               foundQR = true;
               totalScans++;
               statScanned.textContent = totalScans;
+              drawQRBoundingBox(qr.cornerPoints, w, h, hudCanvas.width, hudCanvas.height);
               processQR(qr.rawValue);
             }
           }
         } catch (e) {}
       }
 
-      // 2. Try High-Speed jsQR Engine
+      // 2. jsQR Engine
       if (!foundQR) {
         try {
           const imageData = scanCtx.getImageData(0, 0, w, h);
@@ -210,6 +216,7 @@ export function createReceiver(container) {
           if (code && code.data && code.data.startsWith('LX|')) {
             totalScans++;
             statScanned.textContent = totalScans;
+            drawJsQRBoundingBox(code.location, w, h, hudCanvas.width, hudCanvas.height);
             processQR(code.data);
           }
         } catch (e) {}
@@ -219,6 +226,44 @@ export function createReceiver(container) {
     if (scanning && !transferComplete) {
       requestAnimationFrame(scanLoop);
     }
+  }
+
+  function drawQRBoundingBox(points, srcW, srcH, dstW, dstH) {
+    if (!points || points.length < 4) return;
+    const scaleX = dstW / srcW;
+    const scaleY = dstH / srcH;
+
+    hudCtx.strokeStyle = '#00f5a0';
+    hudCtx.lineWidth = 4;
+    hudCtx.shadowColor = '#00f5a0';
+    hudCtx.shadowBlur = 10;
+    hudCtx.beginPath();
+    hudCtx.moveTo(points[0].x * scaleX, points[0].y * scaleY);
+    for (let i = 1; i < points.length; i++) {
+      hudCtx.lineTo(points[i].x * scaleX, points[i].y * scaleY);
+    }
+    hudCtx.closePath();
+    hudCtx.stroke();
+    hudCtx.shadowBlur = 0;
+  }
+
+  function drawJsQRBoundingBox(loc, srcW, srcH, dstW, dstH) {
+    if (!loc) return;
+    const scaleX = dstW / srcW;
+    const scaleY = dstH / srcH;
+
+    hudCtx.strokeStyle = '#00f5a0';
+    hudCtx.lineWidth = 4;
+    hudCtx.shadowColor = '#00f5a0';
+    hudCtx.shadowBlur = 10;
+    hudCtx.beginPath();
+    hudCtx.moveTo(loc.topLeftCorner.x * scaleX, loc.topLeftCorner.y * scaleY);
+    hudCtx.lineTo(loc.topRightCorner.x * scaleX, loc.topRightCorner.y * scaleY);
+    hudCtx.lineTo(loc.bottomRightCorner.x * scaleX, loc.bottomRightCorner.y * scaleY);
+    hudCtx.lineTo(loc.bottomLeftCorner.x * scaleX, loc.bottomLeftCorner.y * scaleY);
+    hudCtx.closePath();
+    hudCtx.stroke();
+    hudCtx.shadowBlur = 0;
   }
 
   function processQR(raw) {

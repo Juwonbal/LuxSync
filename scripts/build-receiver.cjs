@@ -9,7 +9,7 @@ const htmlContent = `<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>LuxSync High-Speed Receiver</title>
+  <title>LuxSync Optical Receiver</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap');
 
@@ -103,6 +103,10 @@ const htmlContent = `<!DOCTYPE html>
     .camera-wrap video {
       width: 100%; height: 100%; object-fit: cover; display: block;
     }
+    .hud-canvas-overlay {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 10;
+    }
     .scan-line {
       position: absolute; left: 5%; width: 90%; height: 2px;
       background: linear-gradient(90deg, transparent, var(--cyan), transparent);
@@ -114,18 +118,6 @@ const htmlContent = `<!DOCTYPE html>
     @keyframes scanMove {
       0%, 100% { top: 15%; }
       50% { top: 85%; }
-    }
-
-    .crosshair {
-      position: absolute; inset: 0;
-      display: flex; align-items: center; justify-content: center;
-      pointer-events: none;
-    }
-    .crosshair::before {
-      content: '';
-      width: 60%; height: 60%;
-      border: 2px solid rgba(0,242,254,0.25);
-      border-radius: 12px;
     }
 
     .progress-section { margin-bottom: 12px; }
@@ -226,9 +218,9 @@ const htmlContent = `<!DOCTYPE html>
 
   <div class="logo">
     <div class="logo-icon">⚡</div>
-    <h1>LuxSync High-Speed Receiver</h1>
+    <h1>LuxSync Receiver</h1>
   </div>
-  <p class="subtitle">Air-Gapped Optical Receiver — No Internet Required</p>
+  <p class="subtitle">Air-Gapped Optical Receiver — Point camera at the screen</p>
 
   <div class="card">
     <div id="status-banner" class="status-waiting">
@@ -237,8 +229,8 @@ const htmlContent = `<!DOCTYPE html>
 
     <div class="camera-wrap">
       <video id="cam-video" autoplay playsinline muted></video>
+      <canvas id="cam-hud-canvas" class="hud-canvas-overlay"></canvas>
       <div class="scan-line" id="scan-line"></div>
-      <div class="crosshair"></div>
     </div>
 
     <div class="progress-section">
@@ -295,6 +287,8 @@ const htmlContent = `<!DOCTYPE html>
 
   <script>
     const video = document.getElementById('cam-video');
+    const hudCanvas = document.getElementById('cam-hud-canvas');
+    const hudCtx = hudCanvas.getContext('2d');
     const scanLine = document.getElementById('scan-line');
     const progressFill = document.getElementById('progress-fill');
     const progressLabel = document.getElementById('progress-label');
@@ -388,7 +382,7 @@ const htmlContent = `<!DOCTYPE html>
     async function scanLoop() {
       if (!scanning) return;
 
-      if (video.readyState >= video.HAVE_ENOUGH_DATA) {
+      if (video.readyState >= video.HAVE_ENOUGH_DATA && video.videoWidth > 0) {
         const maxDim = 640;
         let w = video.videoWidth;
         let h = video.videoHeight;
@@ -399,6 +393,10 @@ const htmlContent = `<!DOCTYPE html>
         scanCanvas.width = w;
         scanCanvas.height = h;
         scanCtx.drawImage(video, 0, 0, w, h);
+
+        hudCanvas.width = video.videoWidth;
+        hudCanvas.height = video.videoHeight;
+        hudCtx.clearRect(0, 0, hudCanvas.width, hudCanvas.height);
 
         let foundQR = false;
 
@@ -411,13 +409,14 @@ const htmlContent = `<!DOCTYPE html>
                 foundQR = true;
                 totalScans++;
                 statScanned.textContent = totalScans;
+                drawQRBoundingBox(qr.cornerPoints, w, h, hudCanvas.width, hudCanvas.height);
                 processQRData(qr.rawValue);
               }
             }
           } catch (e) {}
         }
 
-        // 2. High-speed jsQR fallback (<10ms per frame)
+        // 2. High-speed jsQR (<10ms)
         if (!foundQR && typeof jsQR === 'function') {
           try {
             const imageData = scanCtx.getImageData(0, 0, w, h);
@@ -427,6 +426,7 @@ const htmlContent = `<!DOCTYPE html>
             if (code && code.data && code.data.startsWith('LX|')) {
               totalScans++;
               statScanned.textContent = totalScans;
+              drawJsQRBoundingBox(code.location, w, h, hudCanvas.width, hudCanvas.height);
               processQRData(code.data);
             }
           } catch (e) {}
@@ -436,6 +436,44 @@ const htmlContent = `<!DOCTYPE html>
       if (scanning && !transferComplete) {
         requestAnimationFrame(scanLoop);
       }
+    }
+
+    function drawQRBoundingBox(points, srcW, srcH, dstW, dstH) {
+      if (!points || points.length < 4) return;
+      const scaleX = dstW / srcW;
+      const scaleY = dstH / srcH;
+
+      hudCtx.strokeStyle = '#00f5a0';
+      hudCtx.lineWidth = 4;
+      hudCtx.shadowColor = '#00f5a0';
+      hudCtx.shadowBlur = 10;
+      hudCtx.beginPath();
+      hudCtx.moveTo(points[0].x * scaleX, points[0].y * scaleY);
+      for (let i = 1; i < points.length; i++) {
+        hudCtx.lineTo(points[i].x * scaleX, points[i].y * scaleY);
+      }
+      hudCtx.closePath();
+      hudCtx.stroke();
+      hudCtx.shadowBlur = 0;
+    }
+
+    function drawJsQRBoundingBox(loc, srcW, srcH, dstW, dstH) {
+      if (!loc) return;
+      const scaleX = dstW / srcW;
+      const scaleY = dstH / srcH;
+
+      hudCtx.strokeStyle = '#00f5a0';
+      hudCtx.lineWidth = 4;
+      hudCtx.shadowColor = '#00f5a0';
+      hudCtx.shadowBlur = 10;
+      hudCtx.beginPath();
+      hudCtx.moveTo(loc.topLeftCorner.x * scaleX, loc.topLeftCorner.y * scaleY);
+      hudCtx.lineTo(loc.topRightCorner.x * scaleX, loc.topRightCorner.y * scaleY);
+      hudCtx.lineTo(loc.bottomRightCorner.x * scaleX, loc.bottomRightCorner.y * scaleY);
+      hudCtx.lineTo(loc.bottomLeftCorner.x * scaleX, loc.bottomLeftCorner.y * scaleY);
+      hudCtx.closePath();
+      hudCtx.stroke();
+      hudCtx.shadowBlur = 0;
     }
 
     function processQRData(raw) {
@@ -565,4 +603,4 @@ const htmlContent = `<!DOCTYPE html>
 `;
 
 fs.writeFileSync(path.join(__dirname, '../public/receiver.html'), htmlContent);
-console.log('Successfully generated Ultra-Reliable receiver.html with 640p frame pipeline!');
+console.log('Successfully rebuilt receiver.html with HUD tracking!');
