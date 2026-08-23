@@ -278,7 +278,7 @@ const htmlContent = `<!DOCTYPE html>
   <!-- Celebration Overlay -->
   <div id="celebration">
     <h2>🎉 Transfer Complete!</h2>
-    <p>File decompressed & received via light.</p>
+    <p>File received via light & ready to open.</p>
     <p class="file-name" id="cel-filename"></p>
     <a class="btn btn-download" id="cel-download" style="max-width:300px">
       💾 Save File
@@ -286,6 +286,36 @@ const htmlContent = `<!DOCTYPE html>
   </div>
 
   <script>
+    function getMimeType(filename) {
+      const ext = (filename.split('.').pop() || '').toLowerCase();
+      const map = {
+        pdf: 'application/pdf',
+        png: 'image/png',
+        jpg: 'image/jpeg',
+        jpeg: 'image/jpeg',
+        gif: 'image/gif',
+        webp: 'image/webp',
+        svg: 'image/svg+xml',
+        mp4: 'video/mp4',
+        mov: 'video/quicktime',
+        mp3: 'audio/mpeg',
+        wav: 'audio/wav',
+        txt: 'text/plain',
+        html: 'text/html',
+        css: 'text/css',
+        js: 'text/javascript',
+        json: 'application/json',
+        zip: 'application/zip',
+        docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        doc: 'application/msword',
+        xls: 'application/vnd.ms-excel',
+        ppt: 'application/vnd.ms-powerpoint'
+      };
+      return map[ext] || 'application/octet-stream';
+    }
+
     const video = document.getElementById('cam-video');
     const hudCanvas = document.getElementById('cam-hud-canvas');
     const hudCtx = hudCanvas.getContext('2d');
@@ -488,12 +518,12 @@ const htmlContent = `<!DOCTYPE html>
         total = parseInt(parts[2], 10);
         isCompressed = parts[3] === '1';
         originalSize = parseInt(parts[4], 10);
-        name = parts[5];
+        try { name = decodeURIComponent(parts[5]); } catch (e) { name = parts[5]; }
         data = parts.slice(6).join('|');
       } else {
         idx = parseInt(parts[1], 10);
         total = parseInt(parts[2], 10);
-        name = parts[3];
+        try { name = decodeURIComponent(parts[3]); } catch (e) { name = parts[3]; }
         data = parts.slice(4).join('|');
       }
 
@@ -547,10 +577,10 @@ const htmlContent = `<!DOCTYPE html>
       transferComplete = true;
       stopCamera();
 
-      setStatus('✅ File received! Decompressing...', 'status-done');
+      setStatus('✅ File received! Preparing download...', 'status-done');
       progressFill.style.width = '100%';
       progressPct.textContent = '100%';
-      progressLabel.textContent = 'Decompressing file...';
+      progressLabel.textContent = 'Complete!';
 
       let fullBase64 = '';
       for (let i = 0; i < totalChunks; i++) {
@@ -568,7 +598,8 @@ const htmlContent = `<!DOCTYPE html>
           bytes = fflate.decompressSync(bytes);
         }
 
-        const blob = new Blob([bytes]);
+        const mimeType = getMimeType(fileName);
+        const blob = new Blob([bytes], { type: mimeType });
         const url = URL.createObjectURL(blob);
 
         btnDownload.href = url;
@@ -582,7 +613,7 @@ const htmlContent = `<!DOCTYPE html>
 
         if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
       } catch (e) {
-        setStatus('⚠ Decompression error: ' + e.message, 'status-error');
+        setStatus('⚠ Error processing file: ' + e.message, 'status-error');
       }
     }
 
@@ -603,4 +634,4 @@ const htmlContent = `<!DOCTYPE html>
 `;
 
 fs.writeFileSync(path.join(__dirname, '../public/receiver.html'), htmlContent);
-console.log('Successfully rebuilt receiver.html with HUD tracking!');
+console.log('Successfully rebuilt receiver.html with MIME type preservation!');

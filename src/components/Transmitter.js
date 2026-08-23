@@ -1,6 +1,6 @@
 /**
- * LuxSync Transmitter v7 — User-Selectable Compression & Optical Sender
- * Gives users the choice between Exact Raw Original Binary or DEFLATE Compression.
+ * LuxSync Transmitter v8 — Full Filename & Extension Preservation
+ * Encodes complete filenames with exact extensions, preserving MIME types.
  */
 
 import QRCode from 'qrcode';
@@ -314,7 +314,6 @@ export function createTransmitter(container) {
       fileBytes = new Uint8Array(e.target.result);
       filenameEl.textContent = file.name;
 
-      // Pre-calculate DEFLATE compression potential
       try {
         const compressed = fflate.compressSync(fileBytes);
         compressedBytes = compressed;
@@ -352,12 +351,14 @@ export function createTransmitter(container) {
     }
 
     totalChunks = dataChunks.length;
-    const truncName = file.name.length > 20 ? file.name.slice(0, 20) : file.name;
+    // Safely encode full filename preserving extension
+    const encodedFileName = encodeURIComponent(file.name);
     const compFlag = (useCompression && compressedBytes) ? '1' : '0';
     const origLen = fileBytes ? fileBytes.length : 0;
 
     for (let i = 0; i < totalChunks; i++) {
-      dataChunks[i] = `LX|${i}|${totalChunks}|${compFlag}|${origLen}|${truncName}|${dataChunks[i]}`;
+      // Protocol header: LX|idx|total|compFlag|origSize|encodedFileName|base64
+      dataChunks[i] = `LX|${i}|${totalChunks}|${compFlag}|${origLen}|${encodedFileName}|${dataChunks[i]}`;
     }
 
     if (useCompression && compressedBytes) {
@@ -437,9 +438,9 @@ export function createTransmitter(container) {
 
   function uint8ToBase64(uint8) {
     let binary = '';
-    const len = uint8.length;
-    for (let i = 0; i < len; i++) {
-      binary += String.fromCharCode(uint8[i]);
+    const sliceLen = 8192;
+    for (let i = 0; i < uint8.length; i += sliceLen) {
+      binary += String.fromCharCode.apply(null, uint8.subarray(i, i + sliceLen));
     }
     return btoa(binary);
   }
