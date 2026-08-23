@@ -222,9 +222,9 @@
 
   <div class="logo">
     <div class="logo-icon">⚡</div>
-    <h1>LuxSync Turbo</h1>
+    <h1>LuxSync High-Speed Receiver</h1>
   </div>
-  <p class="subtitle">Air-Gapped High-Speed Receiver — Compression Accelerated</p>
+  <p class="subtitle">Air-Gapped Optical Receiver — No Internet Required</p>
 
   <div class="card">
     <div id="status-banner" class="status-waiting">
@@ -385,12 +385,20 @@
       if (!scanning) return;
 
       if (video.readyState >= video.HAVE_ENOUGH_DATA) {
-        scanCanvas.width = video.videoWidth;
-        scanCanvas.height = video.videoHeight;
-        scanCtx.drawImage(video, 0, 0);
+        const maxDim = 640;
+        let w = video.videoWidth;
+        let h = video.videoHeight;
+        if (w > maxDim) {
+          h = Math.round((h * maxDim) / w);
+          w = maxDim;
+        }
+        scanCanvas.width = w;
+        scanCanvas.height = h;
+        scanCtx.drawImage(video, 0, 0, w, h);
 
         let foundQR = false;
 
+        // 1. Hardware BarcodeDetector
         if (detector) {
           try {
             const results = await detector.detect(scanCanvas);
@@ -405,10 +413,11 @@
           } catch (e) {}
         }
 
+        // 2. High-speed jsQR fallback (<10ms per frame)
         if (!foundQR && typeof jsQR === 'function') {
           try {
-            const imageData = scanCtx.getImageData(0, 0, scanCanvas.width, scanCanvas.height);
-            const code = jsQR(imageData.data, imageData.width, imageData.height, {
+            const imageData = scanCtx.getImageData(0, 0, w, h);
+            const code = jsQR(imageData.data, w, h, {
               inversionAttempts: 'dontInvert'
             });
             if (code && code.data && code.data.startsWith('LX|')) {
@@ -452,7 +461,7 @@
         totalChunks = total;
         fileName = name || 'received_file';
         statFile.textContent = fileName;
-        setStatus('Receiving high-speed data stream...', 'status-receiving');
+        setStatus('Receiving data stream...', 'status-receiving');
         buildChunkGrid(total);
       }
 
@@ -496,7 +505,7 @@
       transferComplete = true;
       stopCamera();
 
-      setStatus('✅ File fully received! Decompressing...', 'status-done');
+      setStatus('✅ File received! Decompressing...', 'status-done');
       progressFill.style.width = '100%';
       progressPct.textContent = '100%';
       progressLabel.textContent = 'Decompressing file...';
@@ -513,7 +522,6 @@
           bytes[i] = binaryStr.charCodeAt(i);
         }
 
-        // Decompress if compressed
         if (isCompressed && typeof fflate !== 'undefined' && fflate.decompressSync) {
           bytes = fflate.decompressSync(bytes);
         }

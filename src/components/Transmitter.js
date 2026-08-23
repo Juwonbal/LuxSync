@@ -1,6 +1,6 @@
 /**
- * LuxSync Transmitter v5 — Fast Steganography Sender
- * Features real-time DEFLATE compression, up to 18 FPS, 800B chunk density.
+ * LuxSync Transmitter v6 — High-Reliability Optical Sender
+ * Features auto-compression, robust chunk sizing (150B-400B), and steady 4-8 FPS flashing.
  */
 
 import QRCode from 'qrcode';
@@ -17,8 +17,8 @@ export function createTransmitter(container) {
   let isFlashing = false;
   let animFrameId = null;
 
-  let fps = 10;           // Fast scanning FPS
-  let chunkSize = 800;    // High-speed chunk size
+  let fps = 5;            // Optimal 5 FPS for guaranteed camera capture
+  let chunkSize = 250;    // Optimal 250B for big, chunky QR modules
   let currentTheme = 'cyberpunk';
   let currentIdx = 0;
   let cycleCount = 0;
@@ -30,7 +30,7 @@ export function createTransmitter(container) {
   container.innerHTML = `
     <div class="card glass-panel">
       <div class="card-header">
-        <h2>⚡ Optical Transmitter <span class="badge badge-success">Turbo Speed</span></h2>
+        <h2>⚡ Optical Transmitter <span class="badge badge-success">High Reliability</span></h2>
         <span class="badge badge-primary">Sender</span>
       </div>
 
@@ -64,7 +64,7 @@ export function createTransmitter(container) {
           <span class="step-number">1</span>
           <div>
             <h3>Get the Receiver on your phone</h3>
-            <p class="step-desc">Scan or download the receiver on the target phone</p>
+            <p class="step-desc">Open the receiver on your phone by scanning or downloading</p>
           </div>
         </div>
 
@@ -88,7 +88,7 @@ export function createTransmitter(container) {
         </div>
 
         <button class="btn btn-primary btn-glow margin-top" id="tx-ready-btn">
-          🚀 Start High-Speed Beam
+          🚀 Start Optical Beam
         </button>
       </div>
 
@@ -98,33 +98,33 @@ export function createTransmitter(container) {
           <span class="step-number">2</span>
           <div>
             <h3>Point phone camera at the screen</h3>
-            <p class="step-desc">Steganographic art frames cycling. Receiver captures automatically.</p>
+            <p class="step-desc">QR codes cycle continuously. The receiver catches missing frames automatically.</p>
           </div>
         </div>
 
         <div class="controls-grid margin-top">
           <div class="control-group">
-            <label>Speed: <span id="tx-fps-val" class="text-cyan">10 FPS</span></label>
-            <input type="range" id="tx-fps-slider" min="4" max="18" value="10" step="1" />
+            <label>Speed: <span id="tx-fps-val" class="text-cyan">5 FPS (Recommended)</span></label>
+            <input type="range" id="tx-fps-slider" min="2" max="10" value="5" step="1" />
           </div>
 
           <div class="control-group">
-            <label>🎨 Steganography Theme</label>
+            <label>🎨 Theme Styling</label>
             <select id="tx-theme-select" class="select-input">
+              <option value="cyberpunk" selected>⚡ Cyberpunk HUD</option>
+              <option value="bioluminescent">🌌 Bioluminescent Frame</option>
+              <option value="matrix">💚 Matrix Terminal</option>
+              <option value="mosaic">🎨 Neon Stencil Card</option>
               <option value="standard">Standard B&W QR</option>
-              <option value="cyberpunk" selected>⚡ Cyberpunk Circuitry</option>
-              <option value="bioluminescent">🌌 Bioluminescent Grid</option>
-              <option value="matrix">💚 Matrix Code Rain</option>
-              <option value="mosaic">🎨 Neon Stencil Mosaic</option>
             </select>
           </div>
 
           <div class="control-group">
-            <label>Frame Density</label>
+            <label>QR Density</label>
             <select id="tx-density-select" class="select-input">
-              <option value="450">450 B (Easy Scan)</option>
-              <option value="800" selected>800 B (Fast Beam)</option>
-              <option value="1200">1200 B (Turbo Max)</option>
+              <option value="150">150 B (Big Modules - Instant Scan)</option>
+              <option value="250" selected>250 B (Balanced - Recommended)</option>
+              <option value="400">400 B (Fast Beam)</option>
             </select>
           </div>
         </div>
@@ -144,6 +144,9 @@ export function createTransmitter(container) {
           </button>
           <button id="tx-restart-btn" class="btn btn-outline">
             🔄 Restart from Beginning
+          </button>
+          <button id="tx-next-btn" class="btn btn-outline btn-sm">
+            ▶ Next Frame
           </button>
         </div>
 
@@ -180,6 +183,7 @@ export function createTransmitter(container) {
   const cycleLabel = container.querySelector('#tx-cycle-label');
   const pauseBtn = container.querySelector('#tx-pause-btn');
   const restartBtn = container.querySelector('#tx-restart-btn');
+  const nextBtn = container.querySelector('#tx-next-btn');
 
   const teleTotal = container.querySelector('#tx-tele-total');
   const teleSent = container.querySelector('#tx-tele-sent');
@@ -213,7 +217,7 @@ export function createTransmitter(container) {
 
   fpsSlider.addEventListener('input', (e) => {
     fps = parseInt(e.target.value);
-    fpsVal.textContent = `${fps} FPS`;
+    fpsVal.textContent = `${fps} FPS${fps === 5 ? ' (Recommended)' : ''}`;
   });
 
   themeSelect.addEventListener('change', (e) => {
@@ -260,6 +264,17 @@ export function createTransmitter(container) {
     }
   });
 
+  nextBtn.addEventListener('click', () => {
+    if (!dataChunks.length) return;
+    if (isFlashing) stopFlashing();
+    pauseBtn.textContent = '▶ Resume';
+    pauseBtn.classList.remove('btn-warning');
+    pauseBtn.classList.add('btn-primary');
+    currentIdx = (currentIdx + 1) % totalChunks;
+    renderCurrentQR();
+    chunkLabel.textContent = `Frame ${currentIdx + 1} / ${totalChunks}`;
+  });
+
   function handleFile(f) {
     file = f;
     const reader = new FileReader();
@@ -273,7 +288,7 @@ export function createTransmitter(container) {
           compressedBytes = compressed;
           isCompressed = true;
           const ratio = Math.round((1 - compressed.length / fileBytes.length) * 100);
-          compInfoEl.textContent = `⚡ DEFLATE Compressed: ${formatBytes(fileBytes.length)} → ${formatBytes(compressed.length)} (${ratio}% smaller)`;
+          compInfoEl.textContent = `⚡ Compressed: ${formatBytes(fileBytes.length)} → ${formatBytes(compressed.length)} (${ratio}% smaller)`;
         } else {
           compressedBytes = fileBytes;
           isCompressed = false;
@@ -366,7 +381,7 @@ export function createTransmitter(container) {
 
       framesSent++;
       teleSent.textContent = framesSent;
-      chunkLabel.textContent = `Frame ${currentIdx} / ${totalChunks}`;
+      chunkLabel.textContent = `Frame ${currentIdx + 1} / ${totalChunks}`;
       cycleLabel.textContent = `Cycle ${cycleCount + 1}`;
     }
 

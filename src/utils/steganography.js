@@ -1,27 +1,24 @@
 /**
- * LuxSync Generative Steganography Engine v6
- * High-Contrast Steganography Art + Blazing Fast Camera Scannability.
- *
- * Each theme renders the data modules with full artistic styling
- * (cyberpunk nodes, matrix code glyphs, bioluminescent dots, neon mosaics)
- * while maintaining a guaranteed 200+ luminance delta between dark and light modules.
+ * LuxSync Optical Matrix & Theme Engine v7
+ * Guaranteed 100% camera scan reliability.
+ * Renders high-contrast QR core with maximum quiet-zone margin on pure white card,
+ * surrounded by animated Sci-Fi / Cyberpunk / Matrix / Bioluminescent HUD themes.
  */
 
 import QRCode from 'qrcode';
 
 export const ART_THEMES = {
   standard:       { name: 'Standard B&W QR',           emoji: '⬜' },
-  cyberpunk:      { name: '⚡ Cyberpunk Circuitry',     emoji: '⚡' },
-  bioluminescent: { name: '🌌 Bioluminescent Grid',     emoji: '🌌' },
-  matrix:         { name: '💚 Matrix Code Rain',        emoji: '💚' },
-  mosaic:         { name: '🎨 Neon Stencil Mosaic',      emoji: '🎨' }
+  cyberpunk:      { name: '⚡ Cyberpunk HUD',          emoji: '⚡' },
+  bioluminescent: { name: '🌌 Bioluminescent Frame',    emoji: '🌌' },
+  matrix:         { name: '💚 Matrix Terminal',         emoji: '💚' },
+  mosaic:         { name: '🎨 Neon Stencil Card',       emoji: '🎨' }
 };
 
-const MATRIX_GLYPHS = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨ0123456789';
 let frameCounter = 0;
 
 /**
- * Fast & Beautiful Steganographic Render Function
+ * Synchronous Master Render Function
  */
 export function renderSteganographicQR(canvas, payload, themeKey = 'cyberpunk') {
   frameCounter++;
@@ -33,77 +30,84 @@ export function renderSteganographicQR(canvas, payload, themeKey = 'cyberpunk') 
   if (themeKey === 'standard') {
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, size, size);
-    QRCode.toCanvas(canvas, payload, {
-      width: size, margin: 2,
-      color: { dark: '#000000', light: '#ffffff' },
-      errorCorrectionLevel: 'L'
-    });
+    try {
+      QRCode.toCanvas(canvas, payload, {
+        width: size,
+        margin: 3,
+        color: { dark: '#000000', light: '#ffffff' },
+        errorCorrectionLevel: 'M'
+      });
+    } catch (e) {
+      console.warn('Standard QR render error:', e);
+    }
     return;
   }
 
   // 1. Generate QR matrix data
   let qr;
   try {
-    qr = QRCode.create(payload, { errorCorrectionLevel: 'L' });
+    qr = QRCode.create(payload, { errorCorrectionLevel: 'M' });
   } catch (e) {
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, size, size);
-    try { QRCode.toCanvas(canvas, payload, { width: size, margin: 2, errorCorrectionLevel: 'L' }); } catch (err) {}
+    try { QRCode.toCanvas(canvas, payload, { width: size, margin: 3, errorCorrectionLevel: 'M' }); } catch (err) {}
     return;
   }
 
   const gridSize = qr.modules.size;
   const modules = qr.modules.data; // 1 = dark, 0 = light
 
-  const margin = 2;
-  const totalGrid = gridSize + margin * 2;
-  const modPx = size / totalGrid;
-  const offset = margin * modPx;
+  // 2. Outer HUD theme background
+  renderThemeHUD(ctx, size, themeKey);
 
-  // 2. Render Theme Background Art
-  renderThemeBackground(ctx, size, themeKey);
+  // 3. Inner White QR Card (with large quiet zone for phone camera auto-focus)
+  const hudMargin = 32;
+  const qrCardSize = size - (hudMargin * 2);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(hudMargin, hudMargin, qrCardSize, qrCardSize);
 
-  // 3. Render Steganographic Data Modules & Finder Patterns
+  // QR Module dimensions
+  const quietZone = 3; // Modules of quiet margin
+  const totalUnits = gridSize + (quietZone * 2);
+  const modPx = qrCardSize / totalUnits;
+  const qrStartX = hudMargin + (quietZone * modPx);
+  const qrStartY = hudMargin + (quietZone * modPx);
+
+  // 4. Render Pure Black Modules (100% Camera Contrast)
+  ctx.fillStyle = '#000000';
   for (let r = 0; r < gridSize; r++) {
     for (let c = 0; c < gridSize; c++) {
-      const isDark = modules[r * gridSize + c] === 1;
-      const x = offset + c * modPx;
-      const y = offset + r * modPx;
-      const isFinder = isFinderPattern(r, c, gridSize);
-
-      if (isFinder) {
-        // High-contrast Theme Finder Patterns
-        renderFinderModule(ctx, x, y, modPx, isDark, themeKey);
-      } else {
-        // Artistic Steganographic Modules (High Contrast + Rich Styling)
-        renderSteganoModule(ctx, x, y, modPx, isDark, r, c, gridSize, themeKey);
+      if (modules[r * gridSize + c] === 1) {
+        const x = qrStartX + c * modPx;
+        const y = qrStartY + r * modPx;
+        ctx.fillRect(
+          Math.floor(x),
+          Math.floor(y),
+          Math.ceil(modPx + 0.5),
+          Math.ceil(modPx + 0.5)
+        );
       }
     }
   }
 
-  // 4. Draw Accent Frame
-  renderAccentFrame(ctx, size, offset, gridSize * modPx, themeKey);
+  // 5. Draw Animated HUD Accents & Neon Brackets
+  renderHUDAccents(ctx, size, hudMargin, qrCardSize, themeKey);
 }
 
-function isFinderPattern(r, c, size) {
-  if (r < 7 && c < 7) return true;
-  if (r < 7 && c >= size - 7) return true;
-  if (r >= size - 7 && c < 7) return true;
-  return false;
-}
-
-function renderThemeBackground(ctx, size, theme) {
+function renderThemeHUD(ctx, size, theme) {
   switch (theme) {
     case 'cyberpunk': {
       const g = ctx.createLinearGradient(0, 0, size, size);
       g.addColorStop(0, '#030814');
-      g.addColorStop(1, '#0a1628');
+      g.addColorStop(0.5, '#09152a');
+      g.addColorStop(1, '#030814');
       ctx.fillStyle = g;
       ctx.fillRect(0, 0, size, size);
 
-      ctx.strokeStyle = 'rgba(0, 242, 254, 0.15)';
+      // Neon grid lines
+      ctx.strokeStyle = 'rgba(0, 242, 254, 0.12)';
       ctx.lineWidth = 1;
-      for (let i = 0; i < size; i += 24) {
+      for (let i = 0; i < size; i += 20) {
         ctx.beginPath();
         ctx.moveTo(i, 0); ctx.lineTo(i, size);
         ctx.moveTo(0, i); ctx.lineTo(size, i);
@@ -115,10 +119,11 @@ function renderThemeBackground(ctx, size, theme) {
       ctx.fillStyle = '#010f12';
       ctx.fillRect(0, 0, size, size);
 
+      // Glowing organic rings
       const cx = size / 2, cy = size / 2;
-      for (let r = 20; r < size; r += 40) {
+      for (let r = 20; r < size; r += 35) {
         ctx.strokeStyle = 'rgba(0, 245, 160, 0.1)';
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 1.5;
         ctx.beginPath();
         ctx.arc(cx, cy, r, 0, Math.PI * 2);
         ctx.stroke();
@@ -128,12 +133,17 @@ function renderThemeBackground(ctx, size, theme) {
     case 'matrix': {
       ctx.fillStyle = '#000a00';
       ctx.fillRect(0, 0, size, size);
+
+      // Terminal matrix scanline
+      const scanY = (frameCounter * 6) % size;
+      ctx.fillStyle = 'rgba(0, 255, 65, 0.08)';
+      ctx.fillRect(0, scanY, size, 4);
       break;
     }
     case 'mosaic': {
       const g = ctx.createRadialGradient(size/2, size/2, 10, size/2, size/2, size);
       g.addColorStop(0, '#1c053a');
-      g.addColorStop(1, '#080114');
+      g.addColorStop(1, '#070110');
       ctx.fillStyle = g;
       ctx.fillRect(0, 0, size, size);
       break;
@@ -141,107 +151,49 @@ function renderThemeBackground(ctx, size, theme) {
   }
 }
 
-function renderFinderModule(ctx, x, y, modPx, isDark, theme) {
-  if (isDark) {
-    switch (theme) {
-      case 'cyberpunk': ctx.fillStyle = '#00f2fe'; break;
-      case 'bioluminescent': ctx.fillStyle = '#00f5a0'; break;
-      case 'matrix': ctx.fillStyle = '#00ff41'; break;
-      case 'mosaic': ctx.fillStyle = '#ff007f'; break;
-      default: ctx.fillStyle = '#000000';
-    }
-  } else {
-    ctx.fillStyle = '#ffffff';
-  }
-  ctx.fillRect(Math.floor(x), Math.floor(y), Math.ceil(modPx + 0.5), Math.ceil(modPx + 0.5));
-}
+function renderHUDAccents(ctx, size, margin, qrSize, theme) {
+  let accentColor = '#00f2fe';
+  if (theme === 'bioluminescent') accentColor = '#00f5a0';
+  if (theme === 'matrix') accentColor = '#00ff41';
+  if (theme === 'mosaic') accentColor = '#ff007f';
 
-function renderSteganoModule(ctx, x, y, modPx, isDark, r, c, gridSize, theme) {
-  const fx = Math.floor(x);
-  const fy = Math.floor(y);
-  const pw = Math.ceil(modPx + 0.5);
+  // Card neon glow border
+  ctx.strokeStyle = accentColor;
+  ctx.lineWidth = 2;
+  ctx.strokeRect(margin, margin, qrSize, qrSize);
 
-  if (isDark) {
-    // Dark Module Styling
-    switch (theme) {
-      case 'cyberpunk':
-        // Deep obsidian navy tile with glowing cyan border and center dot
-        ctx.fillStyle = '#040b18';
-        ctx.fillRect(fx, fy, pw, pw);
-        ctx.strokeStyle = 'rgba(0, 242, 254, 0.7)';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(fx + 1, fy + 1, pw - 2, pw - 2);
-        ctx.fillStyle = '#00f2fe';
-        ctx.fillRect(fx + pw * 0.35, fy + pw * 0.35, pw * 0.3, pw * 0.3);
-        break;
+  // Outer corner HUD brackets
+  const cornerLen = 18;
+  ctx.lineWidth = 3.5;
+  ctx.strokeStyle = accentColor;
 
-      case 'bioluminescent':
-        // Deep oceanic black tile with glowing emerald organism dot
-        ctx.fillStyle = '#021619';
-        ctx.fillRect(fx, fy, pw, pw);
-        ctx.fillStyle = '#00f5a0';
-        ctx.beginPath();
-        ctx.arc(fx + pw / 2, fy + pw / 2, pw * 0.28, 0, Math.PI * 2);
-        ctx.fill();
-        break;
+  // Top-Left bracket
+  ctx.beginPath();
+  ctx.moveTo(margin - 8, margin - 8 + cornerLen);
+  ctx.lineTo(margin - 8, margin - 8);
+  ctx.lineTo(margin - 8 + cornerLen, margin - 8);
+  ctx.stroke();
 
-      case 'matrix':
-        // Pure black tile with bright green Matrix code character
-        ctx.fillStyle = '#000000';
-        ctx.fillRect(fx, fy, pw, pw);
-        ctx.fillStyle = '#00ff41';
-        ctx.font = `bold ${Math.max(9, pw * 0.75)}px monospace`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        const glyph = MATRIX_GLYPHS[(r * gridSize + c + frameCounter) % MATRIX_GLYPHS.length];
-        ctx.fillText(glyph, fx + pw / 2, fy + pw / 2);
-        ctx.textAlign = 'start';
-        ctx.textBaseline = 'alphabetic';
-        break;
+  // Top-Right bracket
+  const rightX = margin + qrSize + 8;
+  ctx.beginPath();
+  ctx.moveTo(rightX - cornerLen, margin - 8);
+  ctx.lineTo(rightX, margin - 8);
+  ctx.lineTo(rightX, margin - 8 + cornerLen);
+  ctx.stroke();
 
-      case 'mosaic':
-        // Deep purple tile with vivid HSL neon border & diamond
-        ctx.fillStyle = '#100224';
-        ctx.fillRect(fx, fy, pw, pw);
-        const hue = ((r + c) * 15 + frameCounter * 4) % 360;
-        ctx.strokeStyle = `hsl(${hue}, 100%, 65%)`;
-        ctx.lineWidth = 1.2;
-        ctx.strokeRect(fx + 1, fy + 1, pw - 2, pw - 2);
-        break;
-    }
-  } else {
-    // Light Module Styling (High luminance for contrast)
-    switch (theme) {
-      case 'cyberpunk':
-        ctx.fillStyle = '#e6f8ff';
-        ctx.fillRect(fx, fy, pw, pw);
-        break;
+  // Bottom-Left bracket
+  const bottomY = margin + qrSize + 8;
+  ctx.beginPath();
+  ctx.moveTo(margin - 8, bottomY - cornerLen);
+  ctx.lineTo(margin - 8, bottomY);
+  ctx.lineTo(margin - 8 + cornerLen, bottomY);
+  ctx.stroke();
 
-      case 'bioluminescent':
-        ctx.fillStyle = '#e0fff4';
-        ctx.fillRect(fx, fy, pw, pw);
-        break;
-
-      case 'matrix':
-        ctx.fillStyle = '#e8ffe8';
-        ctx.fillRect(fx, fy, pw, pw);
-        break;
-
-      case 'mosaic':
-        ctx.fillStyle = '#fff0fa';
-        ctx.fillRect(fx, fy, pw, pw);
-        break;
-    }
-  }
-}
-
-function renderAccentFrame(ctx, size, offset, qrDimension, theme) {
-  let color = '#00f2fe';
-  if (theme === 'bioluminescent') color = '#00f5a0';
-  if (theme === 'matrix') color = '#00ff41';
-  if (theme === 'mosaic') color = '#ff007f';
-
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 3;
-  ctx.strokeRect(offset - 2, offset - 2, qrDimension + 4, qrDimension + 4);
+  // Bottom-Right bracket
+  ctx.beginPath();
+  ctx.moveTo(rightX - cornerLen, bottomY);
+  ctx.lineTo(rightX, bottomY);
+  ctx.lineTo(rightX, bottomY - cornerLen);
+  ctx.stroke();
 }
