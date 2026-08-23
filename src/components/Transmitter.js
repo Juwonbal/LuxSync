@@ -1,6 +1,6 @@
 /**
- * LuxSync Transmitter v6 — High-Reliability Optical Sender
- * Features auto-compression, robust chunk sizing (150B-400B), and steady 4-8 FPS flashing.
+ * LuxSync Transmitter v7 — User-Selectable Compression & Optical Sender
+ * Gives users the choice between Exact Raw Original Binary or DEFLATE Compression.
  */
 
 import QRCode from 'qrcode';
@@ -11,7 +11,7 @@ export function createTransmitter(container) {
   let file = null;
   let fileBytes = null;
   let compressedBytes = null;
-  let isCompressed = false;
+  let useCompression = false; // User choice (default: Raw Original)
   let dataChunks = [];
   let totalChunks = 0;
   let isFlashing = false;
@@ -38,7 +38,7 @@ export function createTransmitter(container) {
       <div id="tx-dropzone" class="dropzone">
         <div class="drop-icon-wrap">📁</div>
         <h3>Drop Any File to Beam via Light</h3>
-        <p>Images, PDFs, Documents, Code, Zips — auto-compressed</p>
+        <p>Images, PDFs, Documents, Code, Zips, Audio, Video</p>
         <input type="file" id="tx-file-input" style="display: none;" />
         <button class="btn btn-outline" onclick="document.getElementById('tx-file-input').click()">
           Browse File
@@ -56,6 +56,27 @@ export function createTransmitter(container) {
           </div>
         </div>
         <button class="btn btn-sm btn-danger" id="tx-remove-file">✕</button>
+      </div>
+
+      <!-- Compression Choice Selector -->
+      <div id="tx-compression-box" class="compression-toggle-box margin-top hidden">
+        <label class="control-label" style="font-weight: 700; margin-bottom: 8px; display: block;">🗜️ File Compression Option</label>
+        <div class="toggle-group">
+          <label class="radio-card">
+            <input type="radio" name="tx-compression" value="raw" checked />
+            <div class="radio-content">
+              <strong>📦 Original Raw Format</strong>
+              <p>Sends exact byte-for-byte original file without compression.</p>
+            </div>
+          </label>
+          <label class="radio-card">
+            <input type="radio" name="tx-compression" value="deflate" />
+            <div class="radio-content">
+              <strong>⚡ DEFLATE Compression</strong>
+              <p id="tx-deflate-preview">Shrinks file size for faster transfer with fewer frames.</p>
+            </div>
+          </label>
+        </div>
       </div>
 
       <!-- Step 1: Get Receiver on Phone -->
@@ -167,6 +188,9 @@ export function createTransmitter(container) {
   const filesizeEl = container.querySelector('#tx-filesize');
   const compInfoEl = container.querySelector('#tx-comp-info');
   const removeFileBtn = container.querySelector('#tx-remove-file');
+  const compressionBox = container.querySelector('#tx-compression-box');
+  const deflatePreview = container.querySelector('#tx-deflate-preview');
+  const compressionRadios = container.querySelectorAll('input[name="tx-compression"]');
 
   const step1 = container.querySelector('#tx-step1');
   const bootstrapQrCanvas = container.querySelector('#tx-bootstrap-qr');
@@ -210,9 +234,17 @@ export function createTransmitter(container) {
     stopFlashing();
     file = null; fileBytes = null; compressedBytes = null; dataChunks = [];
     fileInfo.classList.add('hidden');
+    compressionBox.classList.add('hidden');
     dropzone.classList.remove('hidden');
     step1.classList.add('hidden');
     step2.classList.add('hidden');
+  });
+
+  compressionRadios.forEach(radio => {
+    radio.addEventListener('change', (e) => {
+      useCompression = e.target.value === 'deflate';
+      if (fileBytes) prepareChunks();
+    });
   });
 
   fpsSlider.addEventListener('input', (e) => {
@@ -282,27 +314,25 @@ export function createTransmitter(container) {
       fileBytes = new Uint8Array(e.target.result);
       filenameEl.textContent = file.name;
 
+      // Pre-calculate DEFLATE compression potential
       try {
         const compressed = fflate.compressSync(fileBytes);
-        if (compressed.length < fileBytes.length) {
-          compressedBytes = compressed;
-          isCompressed = true;
-          const ratio = Math.round((1 - compressed.length / fileBytes.length) * 100);
-          compInfoEl.textContent = `⚡ Compressed: ${formatBytes(fileBytes.length)} → ${formatBytes(compressed.length)} (${ratio}% smaller)`;
+        compressedBytes = compressed;
+        const ratio = Math.round((1 - compressed.length / fileBytes.length) * 100);
+        if (ratio > 5) {
+          deflatePreview.textContent = `⚡ Saves ${ratio}% size (${formatBytes(fileBytes.length)} → ${formatBytes(compressed.length)})`;
         } else {
-          compressedBytes = fileBytes;
-          isCompressed = false;
-          compInfoEl.textContent = `Raw Data: ${formatBytes(fileBytes.length)}`;
+          deflatePreview.textContent = `File already compressed (${formatBytes(fileBytes.length)})`;
         }
       } catch (err) {
-        compressedBytes = fileBytes;
-        isCompressed = false;
-        compInfoEl.textContent = `Raw Data: ${formatBytes(fileBytes.length)}`;
+        compressedBytes = null;
+        deflatePreview.textContent = `Shrinks file size for faster transfer.`;
       }
 
       prepareChunks();
       dropzone.classList.add('hidden');
       fileInfo.classList.remove('hidden');
+      compressionBox.classList.remove('hidden');
       step1.classList.remove('hidden');
       step2.classList.add('hidden');
 
@@ -312,7 +342,7 @@ export function createTransmitter(container) {
   }
 
   function prepareChunks() {
-    const bytesToChunk = compressedBytes || fileBytes;
+    const bytesToChunk = (useCompression && compressedBytes) ? compressedBytes : fileBytes;
     const fullBase64 = uint8ToBase64(bytesToChunk);
     const b64ChunkLen = Math.ceil(chunkSize * 4 / 3);
     dataChunks = [];
@@ -323,11 +353,18 @@ export function createTransmitter(container) {
 
     totalChunks = dataChunks.length;
     const truncName = file.name.length > 20 ? file.name.slice(0, 20) : file.name;
-    const compFlag = isCompressed ? '1' : '0';
+    const compFlag = (useCompression && compressedBytes) ? '1' : '0';
     const origLen = fileBytes ? fileBytes.length : 0;
 
     for (let i = 0; i < totalChunks; i++) {
       dataChunks[i] = `LX|${i}|${totalChunks}|${compFlag}|${origLen}|${truncName}|${dataChunks[i]}`;
+    }
+
+    if (useCompression && compressedBytes) {
+      const ratio = Math.round((1 - compressedBytes.length / fileBytes.length) * 100);
+      compInfoEl.textContent = `⚡ DEFLATE Compressed: ${formatBytes(fileBytes.length)} → ${formatBytes(compressedBytes.length)} (${ratio}% smaller) → ${totalChunks} frames`;
+    } else {
+      compInfoEl.textContent = `📦 Raw Original Format: ${formatBytes(fileBytes.length)} (Uncompressed) → ${totalChunks} frames`;
     }
 
     filesizeEl.textContent = `${formatBytes(fileBytes.length)} → ${totalChunks} frames @ ${chunkSize}B`;

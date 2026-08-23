@@ -145,14 +145,6 @@ header {
 }
 .scan-line.active { display: block; }
 @keyframes scanMove { 0%, 100% { top: 15%; } 50% { top: 85%; } }
-.crosshair-overlay {
-  position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center; pointer-events: none;
-}
-.crosshair-overlay::before {
-  content: ''; width: 60%; height: 60%;
-  border: 2px solid rgba(0,242,254,0.2); border-radius: 12px;
-}
 
 /* Buttons */
 .btn {
@@ -183,6 +175,57 @@ header {
 .file-emoji { font-size: 1.8rem; }
 .file-details h4 { font-size: 0.95rem; word-break: break-all; }
 .file-details p { font-size: 0.82rem; color: var(--text-muted); }
+
+/* Compression Selector Box */
+.compression-toggle-box {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1rem;
+}
+.toggle-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+@media (max-width: 600px) {
+  .toggle-group {
+    grid-template-columns: 1fr;
+  }
+}
+.radio-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.radio-card:hover {
+  border-color: var(--cyan);
+  background: rgba(0, 242, 254, 0.05);
+}
+.radio-card input[type="radio"] {
+  accent-color: var(--cyan);
+  margin-top: 3px;
+  cursor: pointer;
+}
+.radio-card input[type="radio"]:checked + .radio-content strong {
+  color: var(--cyan);
+}
+.radio-content strong {
+  display: block;
+  font-size: 0.88rem;
+  margin-bottom: 2px;
+}
+.radio-content p {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  line-height: 1.3;
+}
 
 /* Steps */
 .step-section { margin-top: 1.5rem; }
@@ -270,13 +313,6 @@ header {
 .status-receiving { background: rgba(0,245,160,0.1); color: var(--emerald); border: 1px solid rgba(0,245,160,0.3); }
 .status-done { background: rgba(0,245,160,0.15); color: var(--emerald); border: 1px solid var(--emerald); }
 .status-error { background: rgba(255,0,127,0.1); color: var(--magenta); border: 1px solid var(--magenta); }
-
-/* Compat banner */
-.compat-banner {
-  background: rgba(255,0,127,0.1); border: 1px solid var(--magenta);
-  color: var(--magenta); padding: 10px 14px; border-radius: 10px;
-  font-size: 0.85rem; margin-bottom: 1rem;
-}
 
 /* Info banner */
 .info-banner {
