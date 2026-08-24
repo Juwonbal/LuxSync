@@ -1,6 +1,6 @@
 /**
- * LuxSync Transmitter v9 — Studio-Grade Optical Beam Deck
- * Premium human-crafted UI/UX, tactile controls, vector SVG icons, keyboard shortcuts.
+ * LuxSync Transmitter v10 — 60-30-10 Color Architecture
+ * 60% Midnight Indigo, 30% Royal Azure & Vivid Teal, 10% Electric Purple CTA.
  */
 
 import QRCode from 'qrcode';
@@ -24,7 +24,6 @@ export function createTransmitter(container) {
   let cycleCount = 0;
   let framesSent = 0;
   let lastFrameTime = 0;
-  let startTime = 0;
 
   let receiverUrl = '';
 
@@ -32,7 +31,7 @@ export function createTransmitter(container) {
     <div class="surface-panel">
       <div class="panel-header">
         <div class="panel-title">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--vivid-teal)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"></path>
             <path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"></path>
             <circle cx="12" cy="12" r="2"></circle>
@@ -41,7 +40,7 @@ export function createTransmitter(container) {
           </svg>
           <h2>Optical Transmitter</h2>
         </div>
-        <span class="tag-pill tag-cyan">Beam Stage</span>
+        <span class="tag-pill tag-teal">Beam Deck</span>
       </div>
 
       <!-- File Drop Stage -->
@@ -64,7 +63,7 @@ export function createTransmitter(container) {
         </button>
       </div>
 
-      <!-- File Spec Card (Shown after selection) -->
+      <!-- File Spec Card -->
       <div id="tx-file-info" class="file-spec-card hidden">
         <div class="file-spec-left">
           <div class="file-type-badge" id="tx-file-badge">
@@ -89,7 +88,7 @@ export function createTransmitter(container) {
       <!-- Compression Toggle Cards -->
       <div id="tx-compression-box" class="compression-section hidden">
         <div class="section-label">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--royal-azure)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="4 14 10 14 10 20"></polyline>
             <polyline points="20 10 14 10 14 4"></polyline>
             <line x1="14" y1="10" x2="21" y2="3"></line>
@@ -121,7 +120,7 @@ export function createTransmitter(container) {
       <!-- Step 1: Connect Phone Receiver -->
       <div id="tx-step1" class="margin-top hidden">
         <div class="section-label">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--vivid-teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
             <line x1="12" y1="18" x2="12.01" y2="18"></line>
           </svg>
@@ -133,7 +132,7 @@ export function createTransmitter(container) {
             <div>
               <div class="setup-card-header">
                 <h4>📱 Instant Camera Scan</h4>
-                <span class="tag-pill tag-cyan">Online / LAN</span>
+                <span class="tag-pill tag-azure">LAN / Online</span>
               </div>
               <p>Scan with your phone camera to launch receiver instantly:</p>
             </div>
@@ -149,7 +148,7 @@ export function createTransmitter(container) {
             <div>
               <div class="setup-card-header">
                 <h4>🛡️ Air-Gapped HTML</h4>
-                <span class="tag-pill tag-emerald">100% Offline</span>
+                <span class="tag-pill tag-teal">100% Offline</span>
               </div>
               <p>Completely disconnected from internet? Download the standalone HTML receiver once. Works permanently offline.</p>
             </div>
@@ -166,7 +165,8 @@ export function createTransmitter(container) {
           </div>
         </div>
 
-        <button class="btn-tactical btn-laser btn-lg btn-block margin-top" id="tx-ready-btn">
+        <!-- 10% ACCENT CTA POP: Electric Purple (#A259FF) -->
+        <button class="btn-tactical btn-electric-purple btn-lg btn-block margin-top" id="tx-ready-btn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
           </svg>
@@ -178,7 +178,7 @@ export function createTransmitter(container) {
       <div id="tx-step2" class="margin-top hidden">
         <div class="deck-controls-strip">
           <div class="deck-control-item">
-            <label>Flashing Speed: <span id="tx-fps-val" class="text-cyan">5 FPS</span></label>
+            <label>Flashing Speed: <span id="tx-fps-val" class="text-teal">5 FPS</span></label>
             <input type="range" id="tx-fps-slider" min="2" max="10" value="5" step="1" />
           </div>
 
@@ -222,21 +222,21 @@ export function createTransmitter(container) {
         <!-- Transport Action Buttons -->
         <div class="transport-bar">
           <button id="tx-pause-btn" class="btn-tactical btn-warning-glass">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="6" y="4" width="4" height="16"></rect>
               <rect x="14" y="4" width="4" height="16"></rect>
             </svg>
             <span>Pause [Space]</span>
           </button>
           <button id="tx-next-btn" class="btn-tactical btn-glass">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polygon points="5 4 15 12 5 20 5 4"></polygon>
               <line x1="19" y1="5" x2="19" y2="19"></line>
             </svg>
             <span>Step Next [→]</span>
           </button>
           <button id="tx-restart-btn" class="btn-tactical btn-glass">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="1 4 1 10 7 10"></polyline>
               <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
             </svg>
@@ -395,7 +395,7 @@ export function createTransmitter(container) {
         </svg>
         <span>Resume [Space]</span>
       `;
-      pauseBtn.className = 'btn-tactical btn-laser';
+      pauseBtn.className = 'btn-tactical btn-cyber-lime';
     } else {
       startFlashing();
       pauseBtn.innerHTML = `
@@ -437,7 +437,7 @@ export function createTransmitter(container) {
       </svg>
       <span>Resume [Space]</span>
     `;
-    pauseBtn.className = 'btn-tactical btn-laser';
+    pauseBtn.className = 'btn-tactical btn-cyber-lime';
     currentIdx = (currentIdx + 1) % totalChunks;
     renderCurrentQR();
     updateTimeline();
@@ -450,7 +450,6 @@ export function createTransmitter(container) {
       fileBytes = new Uint8Array(e.target.result);
       filenameEl.textContent = file.name;
 
-      // Pre-calculate DEFLATE compression potential
       try {
         const compressed = fflate.compressSync(fileBytes);
         compressedBytes = compressed;
@@ -496,7 +495,6 @@ export function createTransmitter(container) {
       dataChunks[i] = `LX|${i}|${totalChunks}|${compFlag}|${origLen}|${encodedFileName}|${dataChunks[i]}`;
     }
 
-    const byteLen = bytesToChunk.length;
     filesizeEl.textContent = `${formatBytes(fileBytes.length)} • ${totalChunks} frames (${chunkSize} B/frame)`;
     teleTotal.textContent = totalChunks;
 
@@ -525,7 +523,6 @@ export function createTransmitter(container) {
     if (!dataChunks.length) return;
     isFlashing = true;
     lastFrameTime = performance.now();
-    startTime = performance.now();
     loop();
   }
 

@@ -14,16 +14,26 @@ const htmlContent = `<!DOCTYPE html>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
 
     :root {
-      --bg-core: #07090e;
-      --bg-surface: rgba(14, 18, 28, 0.8);
-      --border-subtle: rgba(255, 255, 255, 0.08);
-      --cyan: #00f2fe;
-      --cyan-dim: rgba(0, 242, 254, 0.15);
-      --emerald: #00f5a0;
-      --emerald-dim: rgba(0, 245, 160, 0.15);
-      --text-primary: #f8fafc;
-      --text-secondary: #94a3b8;
-      --text-tertiary: #64748b;
+      /* 60% Dominant Base Neutral */
+      --bg-deep: #020826;
+      --bg-indigo: #040F49;
+      --bg-surface: rgba(4, 15, 73, 0.8);
+      
+      /* 30% Secondary Structure (Royal Azure & Vivid Teal) */
+      --royal-azure: #006BDF;
+      --royal-azure-dim: rgba(0, 107, 223, 0.15);
+      --vivid-teal: #00BFA6;
+      --vivid-teal-dim: rgba(0, 191, 166, 0.15);
+      --border-subtle: rgba(0, 107, 223, 0.22);
+      
+      /* 10% Accent (Cyber Lime & Electric Purple) */
+      --cyber-lime: #00FF88;
+      --cyber-lime-glow: rgba(0, 255, 136, 0.45);
+      --electric-purple: #A259FF;
+      
+      --text-primary: #ffffff;
+      --text-secondary: #c2d1e8;
+      --text-tertiary: #7c92b8;
       --font-sans: 'Plus Jakarta Sans', -apple-system, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
     }
@@ -31,12 +41,13 @@ const htmlContent = `<!DOCTYPE html>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
 
     body {
-      background-color: var(--bg-core);
+      background-color: var(--bg-deep);
       background-image: 
-        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0, 242, 254, 0.08), transparent 70%),
-        linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
-      background-size: 100% 100%, 36px 36px, 36px 36px;
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0, 107, 223, 0.2), transparent 70%),
+        radial-gradient(ellipse 60% 40% at 85% 95%, rgba(162, 89, 255, 0.12), transparent 70%),
+        linear-gradient(to right, rgba(0, 107, 223, 0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 107, 223, 0.04) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 36px 36px, 36px 36px;
       color: var(--text-primary);
       font-family: var(--font-sans);
       min-height: 100vh;
@@ -57,17 +68,17 @@ const htmlContent = `<!DOCTYPE html>
 
     .brand-icon {
       width: 40px; height: 40px;
-      background: linear-gradient(135deg, rgba(0, 242, 254, 0.2), rgba(127, 0, 255, 0.3));
-      border: 1px solid rgba(0, 242, 254, 0.4);
+      background: linear-gradient(135deg, var(--royal-azure), #020826);
+      border: 1.5px solid var(--vivid-teal);
       border-radius: 10px;
       display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 0 16px rgba(0, 242, 254, 0.2);
+      box-shadow: 0 0 16px rgba(0, 191, 166, 0.25);
     }
-    .brand-icon svg { width: 20px; height: 20px; stroke: var(--cyan); }
+    .brand-icon svg { width: 20px; height: 20px; stroke: var(--cyber-lime); }
 
     .brand-text h1 {
       font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em;
-      background: linear-gradient(135deg, #fff 40%, var(--cyan) 100%);
+      background: linear-gradient(135deg, #fff 40%, var(--vivid-teal) 100%);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
     .brand-sub {
@@ -82,7 +93,7 @@ const htmlContent = `<!DOCTYPE html>
       border: 1px solid var(--border-subtle);
       border-radius: 20px;
       padding: 16px;
-      box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 16px 40px -10px rgba(2, 8, 38, 0.8);
       margin-bottom: 14px;
     }
 
@@ -92,14 +103,14 @@ const htmlContent = `<!DOCTYPE html>
       font-size: 0.82rem; font-weight: 600; text-align: center;
       margin-bottom: 12px; transition: all 0.25s ease;
     }
-    .status-waiting { background: rgba(255,255,255,0.04); color: var(--text-secondary); border: 1px solid var(--border-subtle); }
-    .status-scanning { background: var(--cyan-dim); color: var(--cyan); border: 1px solid rgba(0,242,254,0.3); }
-    .status-receiving { background: var(--emerald-dim); color: var(--emerald); border: 1px solid rgba(0,245,160,0.3); box-shadow: 0 0 16px rgba(0,245,160,0.15); }
-    .status-done { background: var(--emerald-dim); color: var(--emerald); border: 1px solid var(--emerald); }
+    .status-waiting { background: rgba(0, 107, 223, 0.1); color: var(--text-secondary); border: 1px solid var(--border-subtle); }
+    .status-scanning { background: var(--royal-azure-dim); color: #70b4ff; border: 1px solid var(--royal-azure); }
+    .status-receiving { background: var(--vivid-teal-dim); color: var(--vivid-teal); border: 1px solid var(--vivid-teal); box-shadow: 0 0 16px rgba(0,191,166,0.2); }
+    .status-done { background: rgba(0,255,136,0.15); color: var(--cyber-lime); border: 1px solid var(--cyber-lime); }
 
     .pulse-dot {
       width: 6px; height: 6px; border-radius: 50%;
-      background: var(--emerald); box-shadow: 0 0 6px var(--emerald);
+      background: var(--cyber-lime); box-shadow: 0 0 6px var(--cyber-lime);
       animation: pulse 2s infinite;
     }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
@@ -107,8 +118,8 @@ const htmlContent = `<!DOCTYPE html>
     .viewport-chassis {
       position: relative; width: 100%;
       border-radius: 14px; overflow: hidden;
-      border: 1px solid var(--border-subtle);
-      aspect-ratio: 4 / 3; background: #000;
+      border: 1.5px solid var(--royal-azure);
+      aspect-ratio: 4 / 3; background: #020826;
       margin-bottom: 12px;
     }
     .viewport-chassis video { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -116,8 +127,8 @@ const htmlContent = `<!DOCTYPE html>
     
     .laser-line {
       position: absolute; left: 8%; width: 84%; height: 2px;
-      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-      box-shadow: 0 0 14px var(--cyan);
+      background: linear-gradient(90deg, transparent, var(--cyber-lime), transparent);
+      box-shadow: 0 0 14px var(--cyber-lime);
       animation: laser 2.4s ease-in-out infinite;
       display: none; z-index: 5;
     }
@@ -128,15 +139,15 @@ const htmlContent = `<!DOCTYPE html>
       position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 4;
     }
     .viewfinder-reticle::before {
-      content: ''; width: 55%; height: 55%; border: 1.5px solid rgba(0, 242, 254, 0.3); border-radius: 12px;
+      content: ''; width: 55%; height: 55%; border: 1.5px solid rgba(0, 191, 166, 0.35); border-radius: 12px;
     }
 
     .timeline-bar {
-      height: 6px; background: rgba(255, 255, 255, 0.08);
+      height: 6px; background: rgba(0, 107, 223, 0.25);
       border-radius: 3px; overflow: hidden; margin-bottom: 6px;
     }
     .timeline-fill {
-      height: 100%; background: linear-gradient(90deg, var(--cyan), var(--emerald));
+      height: 100%; background: linear-gradient(90deg, var(--royal-azure), var(--vivid-teal));
       width: 0%; transition: width 0.15s linear;
     }
     .timeline-labels {
@@ -147,33 +158,39 @@ const htmlContent = `<!DOCTYPE html>
 
     .chunk-matrix {
       display: flex; flex-wrap: wrap; gap: 3px; max-height: 60px; overflow: hidden;
-      padding: 6px; background: rgba(0, 0, 0, 0.25); border-radius: 10px;
+      padding: 6px; background: rgba(2, 8, 38, 0.6); border-radius: 10px;
       border: 1px solid var(--border-subtle); margin-bottom: 10px;
     }
     .chunk-node {
-      width: 7px; height: 7px; background: rgba(255, 255, 255, 0.06);
+      width: 7px; height: 7px; background: rgba(0, 107, 223, 0.2);
       border-radius: 2px; transition: background 0.2s, box-shadow 0.2s;
     }
-    .chunk-node.received { background: var(--emerald); box-shadow: 0 0 6px var(--emerald); }
+    .chunk-node.received { background: var(--cyber-lime); box-shadow: 0 0 6px var(--cyber-lime); }
 
     .telemetry-deck {
       display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
-      background: rgba(0, 0, 0, 0.25); border: 1px solid var(--border-subtle);
+      background: rgba(2, 8, 38, 0.5); border: 1px solid var(--border-subtle);
       border-radius: 10px; padding: 8px 10px; font-size: 0.78rem;
     }
     .tele-item { display: flex; flex-direction: column; }
     .tele-label { font-size: 0.65rem; font-family: var(--font-mono); color: var(--text-tertiary); text-transform: uppercase; }
-    .tele-val { font-family: var(--font-mono); font-weight: 700; color: var(--cyan); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .tele-val { font-family: var(--font-mono); font-weight: 700; color: var(--vivid-teal); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
+    /* 10% Pop CTA Buttons */
     .btn-tactical {
       width: 100%; padding: 14px; border: none; border-radius: 12px;
       font-family: var(--font-sans); font-weight: 700; font-size: 0.95rem;
       cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); text-decoration: none;
     }
-    .btn-emerald {
-      background: linear-gradient(135deg, var(--emerald), #00c853);
-      color: #000; box-shadow: 0 4px 20px rgba(0, 245, 160, 0.25);
+    .btn-cyber-lime {
+      background: linear-gradient(135deg, var(--cyber-lime), #00BFA6);
+      color: #020826; box-shadow: 0 8px 30px -4px rgba(0, 255, 136, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .btn-cyber-lime:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 35px -2px rgba(0, 255, 136, 0.6);
     }
     .btn-stop {
       background: rgba(255, 0, 127, 0.1); border: 1px solid rgba(255, 0, 127, 0.3); color: #ff007f;
@@ -217,7 +234,7 @@ const htmlContent = `<!DOCTYPE html>
     </div>
     <div class="timeline-labels">
       <span id="progress-label">Awaiting optical stream...</span>
-      <span id="progress-pct" style="color:var(--cyan);">0%</span>
+      <span id="progress-pct" style="color:var(--vivid-teal);">0%</span>
     </div>
 
     <div class="chunk-matrix" id="chunk-grid"></div>
@@ -242,7 +259,8 @@ const htmlContent = `<!DOCTYPE html>
     </div>
   </div>
 
-  <button class="btn-tactical btn-emerald" id="btn-start" onclick="startCamera()">
+  <!-- 10% Pop CTA Button: Cyber Lime -->
+  <button class="btn-tactical btn-cyber-lime" id="btn-start" onclick="startCamera()">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path>
       <circle cx="12" cy="13" r="3"></circle>
@@ -255,7 +273,7 @@ const htmlContent = `<!DOCTYPE html>
     </svg>
     Stop Camera Viewfinder
   </button>
-  <a class="btn-tactical btn-emerald hidden" id="btn-download">
+  <a class="btn-tactical btn-cyber-lime hidden" id="btn-download">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
       <polyline points="7 10 12 15 17 10"></polyline>
@@ -416,13 +434,15 @@ const htmlContent = `<!DOCTYPE html>
       if (!points || points.length < 4) return;
       const scaleX = dstW / srcW;
       const scaleY = dstH / srcH;
-      hudCtx.strokeStyle = '#00f5a0';
+      hudCtx.strokeStyle = '#00FF88';
       hudCtx.lineWidth = 4;
-      hudCtx.shadowColor = '#00f5a0';
+      hudCtx.shadowColor = '#00FF88';
       hudCtx.shadowBlur = 12;
       hudCtx.beginPath();
       hudCtx.moveTo(points[0].x * scaleX, points[0].y * scaleY);
-      for (let i = 1; i < points.length; i++) hudCtx.lineTo(points[i].x * scaleX, points[i].y * scaleY);
+      for (let i = 1; i < points.length; i++) {
+        hudCtx.lineTo(points[i].x * scaleX, points[i].y * scaleY);
+      }
       hudCtx.closePath();
       hudCtx.stroke();
       hudCtx.shadowBlur = 0;
@@ -432,9 +452,9 @@ const htmlContent = `<!DOCTYPE html>
       if (!loc) return;
       const scaleX = dstW / srcW;
       const scaleY = dstH / srcH;
-      hudCtx.strokeStyle = '#00f5a0';
+      hudCtx.strokeStyle = '#00FF88';
       hudCtx.lineWidth = 4;
-      hudCtx.shadowColor = '#00f5a0';
+      hudCtx.shadowColor = '#00FF88';
       hudCtx.shadowBlur = 12;
       hudCtx.beginPath();
       hudCtx.moveTo(loc.topLeftCorner.x * scaleX, loc.topLeftCorner.y * scaleY);
@@ -547,4 +567,4 @@ const htmlContent = `<!DOCTYPE html>
 `;
 
 fs.writeFileSync(path.join(__dirname, '../public/receiver.html'), htmlContent);
-console.log('Successfully generated Studio-Grade receiver.html!');
+console.log('Successfully generated receiver.html with 60-30-10 color scheme!');

@@ -1,30 +1,47 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
+/* ==========================================================================
+   60-30-10 Color Architecture
+   60% Dominant: Midnight Indigo (#040F49 / #020826)
+   30% Secondary: Royal Azure (#006BDF) & Vivid Teal (#00BFA6)
+   10% Accent: Electric Purple (#A259FF) & Cyber Lime (#00FF88)
+   ========================================================================== */
+
 :root {
-  --bg-core: #07090e;
-  --bg-surface: rgba(14, 18, 28, 0.75);
-  --bg-surface-elevated: rgba(22, 28, 44, 0.85);
+  /* 60% Dominant Base Neutral */
+  --bg-deep: #020826;
+  --bg-indigo: #040F49;
+  --bg-surface: rgba(4, 15, 73, 0.72);
+  --bg-surface-elevated: rgba(7, 24, 98, 0.82);
   --bg-card-subtle: rgba(255, 255, 255, 0.03);
   
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-focus: rgba(0, 242, 254, 0.5);
-  --border-glow: rgba(0, 242, 254, 0.2);
+  /* 30% Secondary Structure (Royal Azure & Vivid Teal) */
+  --royal-azure: #006BDF;
+  --royal-azure-dim: rgba(0, 107, 223, 0.15);
+  --royal-azure-glow: rgba(0, 107, 223, 0.35);
   
-  --cyan: #00f2fe;
-  --cyan-dim: rgba(0, 242, 254, 0.15);
-  --cyan-glow: rgba(0, 242, 254, 0.4);
+  --vivid-teal: #00BFA6;
+  --vivid-teal-dim: rgba(0, 191, 166, 0.15);
+  --vivid-teal-glow: rgba(0, 191, 166, 0.35);
   
-  --emerald: #00f5a0;
-  --emerald-dim: rgba(0, 245, 160, 0.15);
-  --emerald-glow: rgba(0, 245, 160, 0.4);
+  --border-subtle: rgba(0, 107, 223, 0.22);
+  --border-active: rgba(0, 191, 166, 0.5);
+  
+  /* 10% Accent (Strictly reserved for Primary CTAs & Pop Elements) */
+  --electric-purple: #A259FF;
+  --electric-purple-hover: #9038fc;
+  --electric-purple-glow: rgba(162, 89, 255, 0.45);
+  
+  --cyber-lime: #00FF88;
+  --cyber-lime-dim: rgba(0, 255, 136, 0.15);
+  --cyber-lime-glow: rgba(0, 255, 136, 0.45);
   
   --magenta: #ff007f;
-  --violet: #7f00ff;
   --warning: #fbbf24;
   
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-tertiary: #64748b;
+  --text-primary: #ffffff;
+  --text-secondary: #c2d1e8;
+  --text-tertiary: #7c92b8;
   
   --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
@@ -34,8 +51,9 @@
   --radius-lg: 20px;
   --radius-full: 9999px;
   
-  --shadow-card: 0 16px 40px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.06);
-  --shadow-glow: 0 0 30px -5px var(--cyan-glow);
+  --shadow-card: 0 16px 40px -10px rgba(2, 8, 38, 0.8), 0 0 0 1px rgba(0, 107, 223, 0.18);
+  --shadow-purple-cta: 0 8px 30px -4px var(--electric-purple-glow);
+  --shadow-lime-cta: 0 8px 30px -4px var(--cyber-lime-glow);
 }
 
 * {
@@ -46,13 +64,14 @@
 }
 
 body {
-  background-color: var(--bg-core);
+  background-color: var(--bg-deep);
   background-image: 
-    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0, 242, 254, 0.08), transparent 70%),
-    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(127, 0, 255, 0.05), transparent 70%),
-    linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
-  background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0, 107, 223, 0.2), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 85% 95%, rgba(162, 89, 255, 0.12), transparent 70%),
+    radial-gradient(circle at 10% 40%, rgba(4, 15, 73, 0.6), transparent 50%),
+    linear-gradient(to right, rgba(0, 107, 223, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 107, 223, 0.04) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 36px 36px, 36px 36px;
   color: var(--text-primary);
   font-family: var(--font-sans);
   min-height: 100vh;
@@ -90,27 +109,26 @@ header {
 .brand-icon {
   width: 44px;
   height: 44px;
-  background: linear-gradient(135deg, rgba(0, 242, 254, 0.2), rgba(127, 0, 255, 0.3));
-  border: 1px solid rgba(0, 242, 254, 0.4);
+  background: linear-gradient(135deg, var(--royal-azure), #020826);
+  border: 1.5px solid var(--vivid-teal);
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
-  box-shadow: 0 0 20px rgba(0, 242, 254, 0.2);
+  box-shadow: 0 0 20px rgba(0, 191, 166, 0.25);
 }
 
 .brand-icon svg {
   width: 22px;
   height: 22px;
-  stroke: var(--cyan);
+  stroke: var(--cyber-lime);
 }
 
 .brand-text h1 {
   font-size: 1.5rem;
   font-weight: 800;
   letter-spacing: -0.03em;
-  background: linear-gradient(135deg, #ffffff 40%, var(--cyan) 100%);
+  background: linear-gradient(135deg, #ffffff 40%, var(--vivid-teal) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   line-height: 1.1;
@@ -130,8 +148,8 @@ header {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--emerald);
-  box-shadow: 0 0 8px var(--emerald);
+  background: var(--cyber-lime);
+  box-shadow: 0 0 8px var(--cyber-lime);
   animation: pulseGlow 2s infinite;
 }
 
@@ -143,7 +161,7 @@ header {
 /* Nav Tabs Segmented Control */
 .segmented-tabs {
   display: inline-flex;
-  background: rgba(15, 20, 32, 0.8);
+  background: rgba(4, 15, 73, 0.9);
   padding: 4px;
   border-radius: var(--radius-full);
   border: 1px solid var(--border-subtle);
@@ -178,18 +196,19 @@ header {
 }
 
 .tab-btn.active {
-  color: #000;
-  background: #ffffff;
-  box-shadow: 0 2px 10px rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--royal-azure), #040F49);
+  border: 1px solid var(--vivid-teal);
+  box-shadow: 0 2px 14px rgba(0, 107, 223, 0.4);
   font-weight: 700;
 }
 
 .tab-btn.active svg {
-  stroke: #000;
+  stroke: var(--vivid-teal);
 }
 
 /* ==========================================================================
-   Surface Panels & Cards
+   Surface Panels & Cards (30% Secondary Structure)
    ========================================================================== */
 
 .surface-panel {
@@ -211,7 +230,7 @@ header {
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+  background: linear-gradient(90deg, transparent, rgba(0, 191, 166, 0.4), transparent);
 }
 
 .panel-header {
@@ -242,28 +261,34 @@ header {
   letter-spacing: 0.02em;
 }
 
-.tag-cyan {
-  background: var(--cyan-dim);
-  color: var(--cyan);
-  border: 1px solid rgba(0, 242, 254, 0.3);
+.tag-azure {
+  background: var(--royal-azure-dim);
+  color: #70b4ff;
+  border: 1px solid rgba(0, 107, 223, 0.4);
 }
 
-.tag-emerald {
-  background: var(--emerald-dim);
-  color: var(--emerald);
-  border: 1px solid rgba(0, 245, 160, 0.3);
+.tag-teal {
+  background: var(--vivid-teal-dim);
+  color: var(--vivid-teal);
+  border: 1px solid rgba(0, 191, 166, 0.4);
+}
+
+.tag-purple {
+  background: rgba(162, 89, 255, 0.15);
+  color: var(--electric-purple);
+  border: 1px solid rgba(162, 89, 255, 0.4);
 }
 
 /* ==========================================================================
-   Dropzone (Modern & Tactile)
+   Dropzone Stage
    ========================================================================== */
 
 .dropzone-stage {
-  border: 1.5px dashed rgba(255, 255, 255, 0.15);
+  border: 1.5px dashed rgba(0, 107, 223, 0.35);
   border-radius: var(--radius-md);
   padding: 3rem 1.5rem;
   text-align: center;
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(2, 8, 38, 0.4);
   transition: all 0.25s ease;
   cursor: pointer;
   position: relative;
@@ -271,16 +296,16 @@ header {
 }
 
 .dropzone-stage:hover, .dropzone-stage.dragover {
-  border-color: var(--cyan);
-  background: rgba(0, 242, 254, 0.03);
-  box-shadow: inset 0 0 30px rgba(0, 242, 254, 0.04);
+  border-color: var(--vivid-teal);
+  background: rgba(0, 191, 166, 0.04);
+  box-shadow: inset 0 0 30px rgba(0, 191, 166, 0.05);
 }
 
 .dropzone-icon-box {
   width: 56px;
   height: 56px;
   margin: 0 auto 1rem;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(0, 107, 223, 0.15);
   border: 1px solid var(--border-subtle);
   border-radius: 14px;
   display: flex;
@@ -290,15 +315,15 @@ header {
 }
 
 .dropzone-stage:hover .dropzone-icon-box {
-  border-color: var(--cyan);
-  background: var(--cyan-dim);
+  border-color: var(--vivid-teal);
+  background: var(--vivid-teal-dim);
   transform: translateY(-3px);
 }
 
 .dropzone-icon-box svg {
   width: 26px;
   height: 26px;
-  stroke: var(--cyan);
+  stroke: var(--vivid-teal);
 }
 
 .dropzone-stage h3 {
@@ -321,7 +346,7 @@ header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(2, 8, 38, 0.6);
   border: 1px solid var(--border-subtle);
   padding: 1rem 1.25rem;
   border-radius: var(--radius-md);
@@ -338,8 +363,8 @@ header {
 .file-type-badge {
   width: 42px;
   height: 42px;
-  background: linear-gradient(135deg, rgba(0, 242, 254, 0.15), rgba(0, 245, 160, 0.15));
-  border: 1px solid rgba(0, 242, 254, 0.3);
+  background: linear-gradient(135deg, var(--royal-azure-dim), var(--vivid-teal-dim));
+  border: 1px solid var(--border-subtle);
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -350,7 +375,7 @@ header {
 .file-type-badge svg {
   width: 20px;
   height: 20px;
-  stroke: var(--cyan);
+  stroke: var(--vivid-teal);
 }
 
 .file-name-text {
@@ -389,7 +414,7 @@ header {
 }
 
 /* ==========================================================================
-   Compression Option Selector (Tactile Cards)
+   Compression Option Selector
    ========================================================================== */
 
 .compression-section {
@@ -422,7 +447,7 @@ header {
   display: flex;
   align-items: flex-start;
   gap: 0.75rem;
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(2, 8, 38, 0.5);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   padding: 0.9rem 1rem;
@@ -432,14 +457,14 @@ header {
 }
 
 .compress-card:hover {
-  border-color: rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.02);
+  border-color: var(--royal-azure);
+  background: rgba(0, 107, 223, 0.06);
 }
 
 .compress-card.selected {
-  border-color: var(--cyan);
-  background: rgba(0, 242, 254, 0.04);
-  box-shadow: 0 0 20px -5px rgba(0, 242, 254, 0.15);
+  border-color: var(--vivid-teal);
+  background: rgba(0, 191, 166, 0.08);
+  box-shadow: 0 0 20px -5px rgba(0, 191, 166, 0.2);
 }
 
 .compress-radio-custom {
@@ -456,8 +481,8 @@ header {
 }
 
 .compress-card.selected .compress-radio-custom {
-  border-color: var(--cyan);
-  background: var(--cyan);
+  border-color: var(--vivid-teal);
+  background: var(--vivid-teal);
 }
 
 .compress-radio-custom::after {
@@ -465,7 +490,7 @@ header {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #000;
+  background: #020826;
   opacity: 0;
   transform: scale(0);
   transition: all 0.2s ease;
@@ -500,7 +525,7 @@ header {
   display: inline-block;
   font-family: var(--font-mono);
   font-size: 0.72rem;
-  color: var(--emerald);
+  color: var(--cyber-lime);
   margin-top: 4px;
 }
 
@@ -520,7 +545,7 @@ header {
 }
 
 .setup-card {
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(2, 8, 38, 0.55);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   padding: 1.25rem;
@@ -572,7 +597,7 @@ header {
 }
 
 /* ==========================================================================
-   The Beam Flasher Deck (Stage 2)
+   The Beam Flasher Deck
    ========================================================================== */
 
 .deck-controls-strip {
@@ -596,9 +621,8 @@ header {
   letter-spacing: 0.05em;
 }
 
-/* Custom Select & Sliders */
 .sleek-select {
-  background: rgba(14, 18, 28, 0.9);
+  background: rgba(4, 15, 73, 0.9);
   border: 1px solid var(--border-subtle);
   color: var(--text-primary);
   padding: 0.6rem 0.85rem;
@@ -612,20 +636,14 @@ header {
 }
 
 .sleek-select:focus {
-  border-color: var(--cyan);
-}
-
-.range-slider-wrap {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  border-color: var(--vivid-teal);
 }
 
 input[type="range"] {
   -webkit-appearance: none;
   width: 100%;
   height: 6px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 107, 223, 0.2);
   border-radius: 3px;
   outline: none;
 }
@@ -635,8 +653,8 @@ input[type="range"]::-webkit-slider-thumb {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: var(--cyan);
-  box-shadow: 0 0 10px var(--cyan);
+  background: var(--vivid-teal);
+  box-shadow: 0 0 10px var(--vivid-teal);
   cursor: pointer;
   transition: transform 0.1s ease;
 }
@@ -647,13 +665,13 @@ input[type="range"]::-webkit-slider-thumb:hover {
 
 /* Optical Flasher Cinema Frame */
 .flasher-chassis {
-  background: #000000;
-  border: 2px solid rgba(0, 242, 254, 0.3);
+  background: #020826;
+  border: 2px solid var(--royal-azure);
   border-radius: var(--radius-lg);
   padding: 12px;
   max-width: 480px;
   margin: 0 auto 1.25rem;
-  box-shadow: 0 0 40px -10px rgba(0, 242, 254, 0.15), inset 0 0 20px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 0 40px -10px rgba(0, 107, 223, 0.3), inset 0 0 20px rgba(2, 8, 38, 0.9);
   position: relative;
 }
 
@@ -678,14 +696,14 @@ input[type="range"]::-webkit-slider-thumb:hover {
 
 .timeline-bar {
   height: 6px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 107, 223, 0.25);
   border-radius: 3px;
   overflow: hidden;
 }
 
 .timeline-progress {
   height: 100%;
-  background: linear-gradient(90deg, var(--cyan), var(--emerald));
+  background: linear-gradient(90deg, var(--royal-azure), var(--vivid-teal));
   width: 0%;
   transition: width 0.1s linear;
 }
@@ -714,7 +732,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 0.5rem;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(2, 8, 38, 0.5);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   padding: 0.85rem;
@@ -743,11 +761,11 @@ input[type="range"]::-webkit-slider-thumb:hover {
   font-family: var(--font-mono);
   font-size: 0.95rem;
   font-weight: 700;
-  color: var(--cyan);
+  color: var(--vivid-teal);
 }
 
 /* ==========================================================================
-   Buttons
+   10% ACCENT CTA BUTTONS (Electric Purple & Cyber Lime Pops)
    ========================================================================== */
 
 .btn-tactical {
@@ -771,37 +789,42 @@ input[type="range"]::-webkit-slider-thumb:hover {
   height: 16px;
 }
 
-.btn-laser {
-  background: linear-gradient(135deg, var(--cyan), #00a8ff);
-  color: #000000;
-  box-shadow: 0 4px 20px rgba(0, 242, 254, 0.25);
+/* 10% Accent CTA 1: Electric Purple (#A259FF) */
+.btn-electric-purple {
+  background: linear-gradient(135deg, var(--electric-purple), #7B2CBF);
+  color: #ffffff;
+  box-shadow: var(--shadow-purple-cta);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.btn-laser:hover {
+.btn-electric-purple:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 25px rgba(0, 242, 254, 0.4);
+  background: linear-gradient(135deg, var(--electric-purple-hover), #6A1BB2);
+  box-shadow: 0 10px 35px -2px var(--electric-purple-glow);
 }
 
-.btn-emerald-laser {
-  background: linear-gradient(135deg, var(--emerald), #00c853);
-  color: #000000;
-  box-shadow: 0 4px 20px rgba(0, 245, 160, 0.25);
+/* 10% Accent CTA 2: Cyber Lime (#00FF88) */
+.btn-cyber-lime {
+  background: linear-gradient(135deg, var(--cyber-lime), #00BFA6);
+  color: #020826;
+  box-shadow: var(--shadow-lime-cta);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.btn-emerald-laser:hover {
+.btn-cyber-lime:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 25px rgba(0, 245, 160, 0.4);
+  box-shadow: 0 10px 35px -2px var(--cyber-lime-glow);
 }
 
 .btn-glass {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 107, 223, 0.12);
   border-color: var(--border-subtle);
   color: var(--text-primary);
 }
 
 .btn-glass:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(0, 107, 223, 0.25);
+  border-color: var(--royal-azure);
 }
 
 .btn-warning-glass {
@@ -840,10 +863,10 @@ input[type="range"]::-webkit-slider-thumb:hover {
   margin: 0 auto 1.25rem;
   border-radius: var(--radius-lg);
   overflow: hidden;
-  border: 1px solid var(--border-subtle);
+  border: 1.5px solid var(--royal-azure);
   aspect-ratio: 4 / 3;
-  background: #000000;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  background: #020826;
+  box-shadow: 0 10px 30px rgba(2, 8, 38, 0.6);
 }
 
 .viewport-chassis video {
@@ -867,8 +890,8 @@ input[type="range"]::-webkit-slider-thumb:hover {
   left: 8%;
   width: 84%;
   height: 2px;
-  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-  box-shadow: 0 0 14px var(--cyan);
+  background: linear-gradient(90deg, transparent, var(--cyber-lime), transparent);
+  box-shadow: 0 0 14px var(--cyber-lime);
   animation: laserScan 2.4s ease-in-out infinite;
   display: none;
   z-index: 5;
@@ -895,7 +918,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
   content: '';
   width: 55%;
   height: 55%;
-  border: 1.5px solid rgba(0, 242, 254, 0.3);
+  border: 1.5px solid rgba(0, 191, 166, 0.35);
   border-radius: 12px;
 }
 
@@ -915,28 +938,28 @@ input[type="range"]::-webkit-slider-thumb:hover {
 }
 
 .status-waiting {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(0, 107, 223, 0.1);
   color: var(--text-secondary);
   border: 1px solid var(--border-subtle);
 }
 
 .status-scanning {
-  background: var(--cyan-dim);
-  color: var(--cyan);
-  border: 1px solid rgba(0, 242, 254, 0.3);
+  background: var(--royal-azure-dim);
+  color: #70b4ff;
+  border: 1px solid var(--royal-azure);
 }
 
 .status-receiving {
-  background: var(--emerald-dim);
-  color: var(--emerald);
-  border: 1px solid rgba(0, 245, 160, 0.3);
-  box-shadow: 0 0 20px rgba(0, 245, 160, 0.15);
+  background: var(--vivid-teal-dim);
+  color: var(--vivid-teal);
+  border: 1px solid var(--vivid-teal);
+  box-shadow: 0 0 20px rgba(0, 191, 166, 0.2);
 }
 
 .status-done {
-  background: var(--emerald-dim);
-  color: var(--emerald);
-  border: 1px solid var(--emerald);
+  background: var(--cyber-lime-dim);
+  color: var(--cyber-lime);
+  border: 1px solid var(--cyber-lime);
 }
 
 /* Chunk Pixel Map */
@@ -948,7 +971,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
   overflow: hidden;
   margin: 1rem 0;
   padding: 6px;
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(2, 8, 38, 0.6);
   border-radius: 10px;
   border: 1px solid var(--border-subtle);
 }
@@ -956,14 +979,14 @@ input[type="range"]::-webkit-slider-thumb:hover {
 .chunk-node {
   width: 7px;
   height: 7px;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(0, 107, 223, 0.2);
   border-radius: 2px;
   transition: background 0.2s, box-shadow 0.2s;
 }
 
 .chunk-node.received {
-  background: var(--emerald);
-  box-shadow: 0 0 6px var(--emerald);
+  background: var(--cyber-lime);
+  box-shadow: 0 0 6px var(--cyber-lime);
 }
 
 /* ==========================================================================
@@ -973,7 +996,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
 footer {
   margin-top: 2rem;
   padding: 1.25rem 1.5rem;
-  background: rgba(14, 18, 28, 0.4);
+  background: rgba(4, 15, 73, 0.4);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   font-size: 0.8rem;
@@ -992,3 +1015,6 @@ footer h4 {
 /* Utility */
 .hidden { display: none !important; }
 .margin-top { margin-top: 1.25rem; }
+.text-teal { color: var(--vivid-teal); }
+.text-purple { color: var(--electric-purple); }
+.text-lime { color: var(--cyber-lime); }
