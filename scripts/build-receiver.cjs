@@ -14,26 +14,18 @@ const htmlContent = `<!DOCTYPE html>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
 
     :root {
-      /* 60% Dominant Base Neutral */
-      --bg-deep: #020826;
-      --bg-indigo: #040F49;
-      --bg-surface: rgba(4, 15, 73, 0.8);
-      
-      /* 30% Secondary Structure (Royal Azure & Vivid Teal) */
-      --royal-azure: #006BDF;
-      --royal-azure-dim: rgba(0, 107, 223, 0.15);
-      --vivid-teal: #00BFA6;
-      --vivid-teal-dim: rgba(0, 191, 166, 0.15);
-      --border-subtle: rgba(0, 107, 223, 0.22);
-      
-      /* 10% Accent (Cyber Lime & Electric Purple) */
+      --bg-dark: #0B0D1B;
+      --bg-surface: rgba(11, 13, 27, 0.85);
+      --primary-violet: #5F01FB;
+      --primary-violet-hover: #5000d6;
+      --primary-violet-glow: rgba(95, 1, 251, 0.45);
+      --secondary-indigo: #514A85;
+      --border-subtle: rgba(81, 74, 133, 0.28);
       --cyber-lime: #00FF88;
-      --cyber-lime-glow: rgba(0, 255, 136, 0.45);
-      --electric-purple: #A259FF;
-      
-      --text-primary: #ffffff;
-      --text-secondary: #c2d1e8;
-      --text-tertiary: #7c92b8;
+      --pure-white: #FFFFFF;
+      --text-primary: #FFFFFF;
+      --text-secondary: #B4B0D0;
+      --text-tertiary: #7D78A4;
       --font-sans: 'Plus Jakarta Sans', -apple-system, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
     }
@@ -41,13 +33,12 @@ const htmlContent = `<!DOCTYPE html>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
 
     body {
-      background-color: var(--bg-deep);
+      background-color: var(--bg-dark);
       background-image: 
-        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0, 107, 223, 0.2), transparent 70%),
-        radial-gradient(ellipse 60% 40% at 85% 95%, rgba(162, 89, 255, 0.12), transparent 70%),
-        linear-gradient(to right, rgba(0, 107, 223, 0.04) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(0, 107, 223, 0.04) 1px, transparent 1px);
-      background-size: 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+        radial-gradient(ellipse 85% 55% at 50% -5%, rgba(95, 1, 251, 0.38) 0%, rgba(81, 74, 133, 0.15) 50%, transparent 80%),
+        linear-gradient(to right, rgba(81, 74, 133, 0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(81, 74, 133, 0.04) 1px, transparent 1px);
+      background-size: 100% 100%, 36px 36px, 36px 36px;
       color: var(--text-primary);
       font-family: var(--font-sans);
       min-height: 100vh;
@@ -68,18 +59,17 @@ const htmlContent = `<!DOCTYPE html>
 
     .brand-icon {
       width: 40px; height: 40px;
-      background: linear-gradient(135deg, var(--royal-azure), #020826);
-      border: 1.5px solid var(--vivid-teal);
+      background: linear-gradient(135deg, var(--primary-violet), #3B0099);
+      border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 10px;
       display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 0 16px rgba(0, 191, 166, 0.25);
+      box-shadow: 0 0 16px var(--primary-violet-glow);
     }
-    .brand-icon svg { width: 20px; height: 20px; stroke: var(--cyber-lime); }
+    .brand-icon svg { width: 20px; height: 20px; stroke: #ffffff; }
 
     .brand-text h1 {
       font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em;
-      background: linear-gradient(135deg, #fff 40%, var(--vivid-teal) 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      color: #ffffff;
     }
     .brand-sub {
       font-size: 0.72rem; color: var(--text-secondary); font-family: var(--font-mono);
@@ -88,13 +78,19 @@ const htmlContent = `<!DOCTYPE html>
     .surface-card {
       width: 100%; max-width: 460px;
       background: var(--bg-surface);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
       border: 1px solid var(--border-subtle);
-      border-radius: 20px;
-      padding: 16px;
-      box-shadow: 0 16px 40px -10px rgba(2, 8, 38, 0.8);
+      border-radius: 22px;
+      padding: 18px;
+      box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.7);
       margin-bottom: 14px;
+      position: relative;
+    }
+
+    .surface-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(95, 1, 251, 0.5), rgba(255, 255, 255, 0.3), transparent);
     }
 
     .status-pill {
@@ -103,9 +99,9 @@ const htmlContent = `<!DOCTYPE html>
       font-size: 0.82rem; font-weight: 600; text-align: center;
       margin-bottom: 12px; transition: all 0.25s ease;
     }
-    .status-waiting { background: rgba(0, 107, 223, 0.1); color: var(--text-secondary); border: 1px solid var(--border-subtle); }
-    .status-scanning { background: var(--royal-azure-dim); color: #70b4ff; border: 1px solid var(--royal-azure); }
-    .status-receiving { background: var(--vivid-teal-dim); color: var(--vivid-teal); border: 1px solid var(--vivid-teal); box-shadow: 0 0 16px rgba(0,191,166,0.2); }
+    .status-waiting { background: rgba(81, 74, 133, 0.15); color: var(--text-secondary); border: 1px solid var(--border-subtle); }
+    .status-scanning { background: rgba(95, 1, 251, 0.15); color: #d6b8ff; border: 1px solid rgba(95, 1, 251, 0.4); }
+    .status-receiving { background: rgba(0, 255, 136, 0.12); color: var(--cyber-lime); border: 1px solid rgba(0, 255, 136, 0.35); box-shadow: 0 0 16px rgba(0,255,136,0.2); }
     .status-done { background: rgba(0,255,136,0.15); color: var(--cyber-lime); border: 1px solid var(--cyber-lime); }
 
     .pulse-dot {
@@ -118,8 +114,8 @@ const htmlContent = `<!DOCTYPE html>
     .viewport-chassis {
       position: relative; width: 100%;
       border-radius: 14px; overflow: hidden;
-      border: 1.5px solid var(--royal-azure);
-      aspect-ratio: 4 / 3; background: #020826;
+      border: 2px solid var(--primary-violet);
+      aspect-ratio: 4 / 3; background: #000000;
       margin-bottom: 12px;
     }
     .viewport-chassis video { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -127,8 +123,8 @@ const htmlContent = `<!DOCTYPE html>
     
     .laser-line {
       position: absolute; left: 8%; width: 84%; height: 2px;
-      background: linear-gradient(90deg, transparent, var(--cyber-lime), transparent);
-      box-shadow: 0 0 14px var(--cyber-lime);
+      background: linear-gradient(90deg, transparent, var(--primary-violet), transparent);
+      box-shadow: 0 0 14px var(--primary-violet);
       animation: laser 2.4s ease-in-out infinite;
       display: none; z-index: 5;
     }
@@ -139,15 +135,15 @@ const htmlContent = `<!DOCTYPE html>
       position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 4;
     }
     .viewfinder-reticle::before {
-      content: ''; width: 55%; height: 55%; border: 1.5px solid rgba(0, 191, 166, 0.35); border-radius: 12px;
+      content: ''; width: 55%; height: 55%; border: 1.5px solid rgba(95, 1, 251, 0.4); border-radius: 12px;
     }
 
     .timeline-bar {
-      height: 6px; background: rgba(0, 107, 223, 0.25);
+      height: 6px; background: rgba(81, 74, 133, 0.3);
       border-radius: 3px; overflow: hidden; margin-bottom: 6px;
     }
     .timeline-fill {
-      height: 100%; background: linear-gradient(90deg, var(--royal-azure), var(--vivid-teal));
+      height: 100%; background: linear-gradient(90deg, var(--primary-violet), #a76bff);
       width: 0%; transition: width 0.15s linear;
     }
     .timeline-labels {
@@ -158,42 +154,43 @@ const htmlContent = `<!DOCTYPE html>
 
     .chunk-matrix {
       display: flex; flex-wrap: wrap; gap: 3px; max-height: 60px; overflow: hidden;
-      padding: 6px; background: rgba(2, 8, 38, 0.6); border-radius: 10px;
+      padding: 6px; background: rgba(11, 13, 27, 0.6); border-radius: 10px;
       border: 1px solid var(--border-subtle); margin-bottom: 10px;
     }
     .chunk-node {
-      width: 7px; height: 7px; background: rgba(0, 107, 223, 0.2);
+      width: 7px; height: 7px; background: rgba(81, 74, 133, 0.25);
       border-radius: 2px; transition: background 0.2s, box-shadow 0.2s;
     }
     .chunk-node.received { background: var(--cyber-lime); box-shadow: 0 0 6px var(--cyber-lime); }
 
     .telemetry-deck {
       display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
-      background: rgba(2, 8, 38, 0.5); border: 1px solid var(--border-subtle);
+      background: rgba(22, 26, 50, 0.45); border: 1px solid var(--border-subtle);
       border-radius: 10px; padding: 8px 10px; font-size: 0.78rem;
     }
     .tele-item { display: flex; flex-direction: column; }
     .tele-label { font-size: 0.65rem; font-family: var(--font-mono); color: var(--text-tertiary); text-transform: uppercase; }
-    .tele-val { font-family: var(--font-mono); font-weight: 700; color: var(--vivid-teal); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .tele-val { font-family: var(--font-mono); font-weight: 700; color: #c49fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-    /* 10% Pop CTA Buttons */
+    /* Primary Violet Pill Button */
     .btn-tactical {
-      width: 100%; padding: 14px; border: none; border-radius: 12px;
+      width: 100%; padding: 14px; border: none; border-radius: 9999px;
       font-family: var(--font-sans); font-weight: 700; font-size: 0.95rem;
       cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); text-decoration: none;
     }
-    .btn-cyber-lime {
-      background: linear-gradient(135deg, var(--cyber-lime), #00BFA6);
-      color: #020826; box-shadow: 0 8px 30px -4px rgba(0, 255, 136, 0.45);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+    .btn-primary-violet {
+      background: var(--primary-violet);
+      color: #ffffff; box-shadow: 0 8px 30px -4px var(--primary-violet-glow);
+      border: 1px solid rgba(255, 255, 255, 0.15);
     }
-    .btn-cyber-lime:hover {
+    .btn-primary-violet:hover {
       transform: translateY(-2px);
-      box-shadow: 0 10px 35px -2px rgba(0, 255, 136, 0.6);
+      background: var(--primary-violet-hover);
+      box-shadow: 0 12px 35px -2px var(--primary-violet-glow);
     }
     .btn-stop {
-      background: rgba(255, 0, 127, 0.1); border: 1px solid rgba(255, 0, 127, 0.3); color: #ff007f;
+      background: rgba(255, 0, 127, 0.12); border: 1px solid rgba(255, 0, 127, 0.3); color: #ff007f;
     }
     .hidden { display: none !important; }
   </style>
@@ -234,7 +231,7 @@ const htmlContent = `<!DOCTYPE html>
     </div>
     <div class="timeline-labels">
       <span id="progress-label">Awaiting optical stream...</span>
-      <span id="progress-pct" style="color:var(--vivid-teal);">0%</span>
+      <span id="progress-pct" style="color:#c49fff;">0%</span>
     </div>
 
     <div class="chunk-matrix" id="chunk-grid"></div>
@@ -259,8 +256,8 @@ const htmlContent = `<!DOCTYPE html>
     </div>
   </div>
 
-  <!-- 10% Pop CTA Button: Cyber Lime -->
-  <button class="btn-tactical btn-cyber-lime" id="btn-start" onclick="startCamera()">
+  <!-- Primary Violet Pill Button: #5F01FB -->
+  <button class="btn-tactical btn-primary-violet" id="btn-start" onclick="startCamera()">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path>
       <circle cx="12" cy="13" r="3"></circle>
@@ -273,7 +270,7 @@ const htmlContent = `<!DOCTYPE html>
     </svg>
     Stop Camera Viewfinder
   </button>
-  <a class="btn-tactical btn-cyber-lime hidden" id="btn-download">
+  <a class="btn-tactical btn-primary-violet hidden" id="btn-download">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
       <polyline points="7 10 12 15 17 10"></polyline>
@@ -434,10 +431,10 @@ const htmlContent = `<!DOCTYPE html>
       if (!points || points.length < 4) return;
       const scaleX = dstW / srcW;
       const scaleY = dstH / srcH;
-      hudCtx.strokeStyle = '#00FF88';
+      hudCtx.strokeStyle = '#5F01FB';
       hudCtx.lineWidth = 4;
-      hudCtx.shadowColor = '#00FF88';
-      hudCtx.shadowBlur = 12;
+      hudCtx.shadowColor = '#5F01FB';
+      hudCtx.shadowBlur = 14;
       hudCtx.beginPath();
       hudCtx.moveTo(points[0].x * scaleX, points[0].y * scaleY);
       for (let i = 1; i < points.length; i++) {
@@ -452,10 +449,10 @@ const htmlContent = `<!DOCTYPE html>
       if (!loc) return;
       const scaleX = dstW / srcW;
       const scaleY = dstH / srcH;
-      hudCtx.strokeStyle = '#00FF88';
+      hudCtx.strokeStyle = '#5F01FB';
       hudCtx.lineWidth = 4;
-      hudCtx.shadowColor = '#00FF88';
-      hudCtx.shadowBlur = 12;
+      hudCtx.shadowColor = '#5F01FB';
+      hudCtx.shadowBlur = 14;
       hudCtx.beginPath();
       hudCtx.moveTo(loc.topLeftCorner.x * scaleX, loc.topLeftCorner.y * scaleY);
       hudCtx.lineTo(loc.topRightCorner.x * scaleX, loc.topRightCorner.y * scaleY);
@@ -567,4 +564,4 @@ const htmlContent = `<!DOCTYPE html>
 `;
 
 fs.writeFileSync(path.join(__dirname, '../public/receiver.html'), htmlContent);
-console.log('Successfully generated receiver.html with 60-30-10 color scheme!');
+console.log('Successfully generated template-styled receiver.html!');

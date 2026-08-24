@@ -1,6 +1,6 @@
 /**
- * LuxSync Transmitter v10 — 60-30-10 Color Architecture
- * 60% Midnight Indigo, 30% Royal Azure & Vivid Teal, 10% Electric Purple CTA.
+ * LuxSync Transmitter v11 — SentinelOne Style Template
+ * Primary Violet (#5F01FB), Slate Indigo (#514A85), Cosmic Obsidian (#0B0D1B).
  */
 
 import QRCode from 'qrcode';
@@ -31,7 +31,7 @@ export function createTransmitter(container) {
     <div class="surface-panel">
       <div class="panel-header">
         <div class="panel-title">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--vivid-teal)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c49fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"></path>
             <path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"></path>
             <circle cx="12" cy="12" r="2"></circle>
@@ -40,7 +40,7 @@ export function createTransmitter(container) {
           </svg>
           <h2>Optical Transmitter</h2>
         </div>
-        <span class="tag-pill tag-teal">Beam Deck</span>
+        <span class="tag-pill tag-violet">Beam Station</span>
       </div>
 
       <!-- File Drop Stage -->
@@ -52,14 +52,14 @@ export function createTransmitter(container) {
             <line x1="12" y1="3" x2="12" y2="15"></line>
           </svg>
         </div>
-        <h3>Drop file to transmit</h3>
+        <h3>Drop any file to beam</h3>
         <p>PDF, Images, Video, Audio, Documents, Archives & Code</p>
         <input type="file" id="tx-file-input" style="display: none;" />
-        <button class="btn-tactical btn-glass" onclick="document.getElementById('tx-file-input').click()">
+        <button class="btn-tactical btn-primary-violet" onclick="document.getElementById('tx-file-input').click()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
           </svg>
-          Browse Local File
+          Browse File
         </button>
       </div>
 
@@ -88,13 +88,13 @@ export function createTransmitter(container) {
       <!-- Compression Toggle Cards -->
       <div id="tx-compression-box" class="compression-section hidden">
         <div class="section-label">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--royal-azure)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c49fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="4 14 10 14 10 20"></polyline>
             <polyline points="20 10 14 10 14 4"></polyline>
             <line x1="14" y1="10" x2="21" y2="3"></line>
             <line x1="3" y1="21" x2="10" y2="14"></line>
           </svg>
-          Transmission Packaging
+          Packaging Format
         </div>
         <div class="compression-cards-grid">
           <label class="compress-card selected" id="card-raw">
@@ -102,7 +102,7 @@ export function createTransmitter(container) {
             <div class="compress-radio-custom"></div>
             <div class="compress-body">
               <strong>Raw Binary (Exact Format)</strong>
-              <p>Streams exact byte-for-byte replica with zero modification.</p>
+              <p>Streams exact byte-for-byte replica with zero compression.</p>
             </div>
           </label>
           <label class="compress-card" id="card-deflate">
@@ -110,7 +110,7 @@ export function createTransmitter(container) {
             <div class="compress-radio-custom"></div>
             <div class="compress-body">
               <strong>DEFLATE Compression</strong>
-              <p>Shrinks data to beam in fewer optical frames.</p>
+              <p>Shrinks file size for faster transfer in fewer frames.</p>
               <div class="savings-chip" id="tx-deflate-preview"></div>
             </div>
           </label>
@@ -120,7 +120,7 @@ export function createTransmitter(container) {
       <!-- Step 1: Connect Phone Receiver -->
       <div id="tx-step1" class="margin-top hidden">
         <div class="section-label">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--vivid-teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c49fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
             <line x1="12" y1="18" x2="12.01" y2="18"></line>
           </svg>
@@ -132,7 +132,7 @@ export function createTransmitter(container) {
             <div>
               <div class="setup-card-header">
                 <h4>📱 Instant Camera Scan</h4>
-                <span class="tag-pill tag-azure">LAN / Online</span>
+                <span class="tag-pill tag-violet">Online / LAN</span>
               </div>
               <p>Scan with your phone camera to launch receiver instantly:</p>
             </div>
@@ -147,8 +147,8 @@ export function createTransmitter(container) {
           <div class="setup-card">
             <div>
               <div class="setup-card-header">
-                <h4>🛡️ Air-Gapped HTML</h4>
-                <span class="tag-pill tag-teal">100% Offline</span>
+                <h4>🛡️ Standalone HTML</h4>
+                <span class="tag-pill tag-indigo">100% Offline</span>
               </div>
               <p>Completely disconnected from internet? Download the standalone HTML receiver once. Works permanently offline.</p>
             </div>
@@ -165,12 +165,13 @@ export function createTransmitter(container) {
           </div>
         </div>
 
-        <!-- 10% ACCENT CTA POP: Electric Purple (#A259FF) -->
-        <button class="btn-tactical btn-electric-purple btn-lg btn-block margin-top" id="tx-ready-btn">
+        <!-- Primary Violet Pill Button (#5F01FB) -->
+        <button class="btn-tactical btn-primary-violet btn-lg btn-block margin-top" id="tx-ready-btn">
+          <span>Initialize Optical Stream</span>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
           </svg>
-          Initialize Optical Beam
         </button>
       </div>
 
@@ -178,7 +179,7 @@ export function createTransmitter(container) {
       <div id="tx-step2" class="margin-top hidden">
         <div class="deck-controls-strip">
           <div class="deck-control-item">
-            <label>Flashing Speed: <span id="tx-fps-val" class="text-teal">5 FPS</span></label>
+            <label>Flashing Speed: <span id="tx-fps-val" class="text-violet">5 FPS</span></label>
             <input type="range" id="tx-fps-slider" min="2" max="10" value="5" step="1" />
           </div>
 
@@ -395,7 +396,7 @@ export function createTransmitter(container) {
         </svg>
         <span>Resume [Space]</span>
       `;
-      pauseBtn.className = 'btn-tactical btn-cyber-lime';
+      pauseBtn.className = 'btn-tactical btn-primary-violet';
     } else {
       startFlashing();
       pauseBtn.innerHTML = `
@@ -437,7 +438,7 @@ export function createTransmitter(container) {
       </svg>
       <span>Resume [Space]</span>
     `;
-    pauseBtn.className = 'btn-tactical btn-cyber-lime';
+    pauseBtn.className = 'btn-tactical btn-primary-violet';
     currentIdx = (currentIdx + 1) % totalChunks;
     renderCurrentQR();
     updateTimeline();

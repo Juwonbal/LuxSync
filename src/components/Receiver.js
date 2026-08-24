@@ -1,5 +1,5 @@
 /**
- * LuxSync Receiver Component v10 — 60-30-10 Color Architecture
+ * LuxSync Receiver Component v11 — SentinelOne Style Template
  */
 
 import jsQR from 'jsqr';
@@ -56,13 +56,13 @@ export function createReceiver(container) {
     <div class="surface-panel">
       <div class="panel-header">
         <div class="panel-title">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--vivid-teal)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c49fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path>
             <circle cx="12" cy="13" r="3"></circle>
           </svg>
           <h2>Optical Receiver</h2>
         </div>
-        <span class="tag-pill tag-teal">Viewfinder</span>
+        <span class="tag-pill tag-violet">Viewfinder</span>
       </div>
 
       <!-- Status Banner -->
@@ -85,7 +85,7 @@ export function createReceiver(container) {
       </div>
       <div class="timeline-labels">
         <span id="rx-progress-label">Awaiting optical stream...</span>
-        <span id="rx-progress-pct" class="text-teal">0%</span>
+        <span id="rx-progress-pct" class="text-violet">0%</span>
       </div>
 
       <!-- Live Chunk Pixel Map -->
@@ -111,9 +111,9 @@ export function createReceiver(container) {
         </div>
       </div>
 
-      <!-- Action Buttons with 10% Pop Colors -->
+      <!-- Action Buttons with Template Pill Styling -->
       <div class="transport-bar margin-top">
-        <button id="rx-start-btn" class="btn-tactical btn-cyber-lime btn-lg btn-block">
+        <button id="rx-start-btn" class="btn-tactical btn-primary-violet btn-lg btn-block">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path>
             <circle cx="12" cy="13" r="3"></circle>
@@ -126,7 +126,7 @@ export function createReceiver(container) {
           </svg>
           Stop Camera Viewfinder
         </button>
-        <a id="rx-download-btn" class="btn-tactical btn-cyber-lime btn-lg btn-block hidden">
+        <a id="rx-download-btn" class="btn-tactical btn-primary-violet btn-lg btn-block hidden">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
             <polyline points="7 10 12 15 17 10"></polyline>
@@ -273,10 +273,10 @@ export function createReceiver(container) {
     const scaleX = dstW / srcW;
     const scaleY = dstH / srcH;
 
-    hudCtx.strokeStyle = '#00FF88';
+    hudCtx.strokeStyle = '#5F01FB';
     hudCtx.lineWidth = 4;
-    hudCtx.shadowColor = '#00FF88';
-    hudCtx.shadowBlur = 12;
+    hudCtx.shadowColor = '#5F01FB';
+    hudCtx.shadowBlur = 14;
     hudCtx.beginPath();
     hudCtx.moveTo(points[0].x * scaleX, points[0].y * scaleY);
     for (let i = 1; i < points.length; i++) {
@@ -292,10 +292,10 @@ export function createReceiver(container) {
     const scaleX = dstW / srcW;
     const scaleY = dstH / srcH;
 
-    hudCtx.strokeStyle = '#00FF88';
+    hudCtx.strokeStyle = '#5F01FB';
     hudCtx.lineWidth = 4;
-    hudCtx.shadowColor = '#00FF88';
-    hudCtx.shadowBlur = 12;
+    hudCtx.shadowColor = '#5F01FB';
+    hudCtx.shadowBlur = 14;
     hudCtx.beginPath();
     hudCtx.moveTo(loc.topLeftCorner.x * scaleX, loc.topLeftCorner.y * scaleY);
     hudCtx.lineTo(loc.topRightCorner.x * scaleX, loc.topRightCorner.y * scaleY);
