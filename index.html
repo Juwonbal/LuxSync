@@ -2,42 +2,64 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>LuxSync — Air-Gapped Optical File Transfer</title>
-    <meta name="description" content="Transfer files between devices using only light. No WiFi, no Bluetooth, no cables, no internet. Your screen flashes QR codes, the phone camera reads them." />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>LuxSync — Air-Gapped Optical Data Transfer</title>
+    <meta name="description" content="Beam files across physical air gaps via high-speed optical light patterns. Zero cables, zero radio frequencies, zero app installs." />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
     <div class="container">
       <header>
-        <div class="logo">
-          <div class="logo-icon">⚡</div>
-          <div>
+        <div class="brand">
+          <div class="brand-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
+          </div>
+          <div class="brand-text">
             <h1>LuxSync</h1>
-            <div class="tagline">Air-Gapped File Transfer via Light</div>
+            <div class="brand-badge">
+              <span class="pulse-dot"></span>
+              <span>Optical Air-Gap Protocol</span>
+            </div>
           </div>
         </div>
 
-        <nav class="nav-tabs">
+        <nav class="segmented-tabs">
           <button class="tab-btn active" data-tab="transmitter">
-            📡 Sender
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"></path>
+              <path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"></path>
+              <circle cx="12" cy="12" r="2"></circle>
+              <path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"></path>
+              <path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1"></path>
+            </svg>
+            <span>Sender</span>
           </button>
           <button class="tab-btn" data-tab="receiver">
-            📷 Receiver
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path>
+              <circle cx="12" cy="13" r="3"></circle>
+            </svg>
+            <span>Receiver</span>
           </button>
         </nav>
       </header>
 
       <main id="app"></main>
 
-      <footer class="glass-panel margin-top">
-        <h4>💡 How It Works</h4>
+      <footer>
+        <h4>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          How It Works
+        </h4>
         <p>
-          <strong>1.</strong> Drop a file on the Sender. &nbsp;
-          <strong>2.</strong> Scan the setup QR with any phone to get the receiver. &nbsp;
-          <strong>3.</strong> Point phone camera at the screen. &nbsp;
-          <strong>4.</strong> Data beams via light — no network, no app, no cables. Air-gapped by physics.
+          LuxSync translates files into sequential optical data matrices streamed directly off your screen. Any camera device can decode the incoming stream in real time without network connections, Bluetooth, or app installs.
         </p>
       </footer>
     </div>

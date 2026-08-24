@@ -11,28 +11,34 @@ const htmlContent = `<!DOCTYPE html>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>LuxSync Optical Receiver</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
 
     :root {
-      --bg: #070a12;
-      --surface: rgba(15, 23, 42, 0.75);
-      --border: rgba(0, 242, 254, 0.18);
+      --bg-core: #07090e;
+      --bg-surface: rgba(14, 18, 28, 0.8);
+      --border-subtle: rgba(255, 255, 255, 0.08);
       --cyan: #00f2fe;
-      --green: #00f5a0;
-      --magenta: #ff007f;
-      --text: #f1f5f9;
-      --muted: #94a3b8;
+      --cyan-dim: rgba(0, 242, 254, 0.15);
+      --emerald: #00f5a0;
+      --emerald-dim: rgba(0, 245, 160, 0.15);
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-tertiary: #64748b;
+      --font-sans: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
 
     body {
-      background: var(--bg);
-      background-image:
-        radial-gradient(circle at 20% 30%, rgba(0,242,254,0.06) 0%, transparent 50%),
-        radial-gradient(circle at 80% 70%, rgba(127,0,255,0.06) 0%, transparent 50%);
-      color: var(--text);
-      font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg-core);
+      background-image: 
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0, 242, 254, 0.08), transparent 70%),
+        linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+      background-size: 100% 100%, 36px 36px, 36px 36px;
+      color: var(--text-primary);
+      font-family: var(--font-sans);
       min-height: 100vh;
       min-height: 100dvh;
       display: flex;
@@ -42,288 +48,246 @@ const htmlContent = `<!DOCTYPE html>
       overflow-x: hidden;
     }
 
-    .logo {
+    .brand {
       display: flex;
       align-items: center;
       gap: 10px;
-      margin: 12px 0 6px;
+      margin: 12px 0 16px;
     }
 
-    .logo-icon {
-      width: 36px; height: 36px;
-      background: linear-gradient(135deg, var(--cyan), #7f00ff);
-      border-radius: 8px;
+    .brand-icon {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, rgba(0, 242, 254, 0.2), rgba(127, 0, 255, 0.3));
+      border: 1px solid rgba(0, 242, 254, 0.4);
+      border-radius: 10px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 18px;
-      box-shadow: 0 0 18px rgba(0,242,254,0.3);
+      box-shadow: 0 0 16px rgba(0, 242, 254, 0.2);
     }
+    .brand-icon svg { width: 20px; height: 20px; stroke: var(--cyan); }
 
-    .logo h1 {
-      font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px;
-      background: linear-gradient(90deg, #fff, var(--cyan));
+    .brand-text h1 {
+      font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #fff 40%, var(--cyan) 100%);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
-
-    .subtitle {
-      font-size: 0.82rem; color: var(--muted); margin-bottom: 14px; text-align: center;
+    .brand-sub {
+      font-size: 0.72rem; color: var(--text-secondary); font-family: var(--font-mono);
     }
 
-    .card {
+    .surface-card {
       width: 100%; max-width: 460px;
-      background: var(--surface);
-      backdrop-filter: blur(16px);
-      border: 1px solid var(--border);
-      border-radius: 18px;
+      background: var(--bg-surface);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
       padding: 16px;
-      margin-bottom: 12px;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+      box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.6);
+      margin-bottom: 14px;
     }
 
-    #status-banner {
-      text-align: center; padding: 10px;
-      font-weight: 600; font-size: 0.95rem;
-      border-radius: 10px;
-      margin-bottom: 12px;
-      transition: all 0.3s ease;
+    .status-pill {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 8px 12px; border-radius: 9999px;
+      font-size: 0.82rem; font-weight: 600; text-align: center;
+      margin-bottom: 12px; transition: all 0.25s ease;
     }
-    .status-waiting { background: rgba(148,163,184,0.1); color: var(--muted); }
-    .status-scanning { background: rgba(0,242,254,0.1); color: var(--cyan); border: 1px solid rgba(0,242,254,0.3); }
-    .status-receiving { background: rgba(0,245,160,0.1); color: var(--green); border: 1px solid rgba(0,245,160,0.3); }
-    .status-done { background: rgba(0,245,160,0.15); color: var(--green); border: 1px solid var(--green); }
-    .status-error { background: rgba(255,0,127,0.1); color: var(--magenta); border: 1px solid var(--magenta); }
+    .status-waiting { background: rgba(255,255,255,0.04); color: var(--text-secondary); border: 1px solid var(--border-subtle); }
+    .status-scanning { background: var(--cyan-dim); color: var(--cyan); border: 1px solid rgba(0,242,254,0.3); }
+    .status-receiving { background: var(--emerald-dim); color: var(--emerald); border: 1px solid rgba(0,245,160,0.3); box-shadow: 0 0 16px rgba(0,245,160,0.15); }
+    .status-done { background: var(--emerald-dim); color: var(--emerald); border: 1px solid var(--emerald); }
 
-    .camera-wrap {
+    .pulse-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--emerald); box-shadow: 0 0 6px var(--emerald);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+    .viewport-chassis {
       position: relative; width: 100%;
       border-radius: 14px; overflow: hidden;
-      border: 2px solid var(--border);
-      aspect-ratio: 4 / 3;
-      background: #000;
+      border: 1px solid var(--border-subtle);
+      aspect-ratio: 4 / 3; background: #000;
       margin-bottom: 12px;
     }
-    .camera-wrap video {
-      width: 100%; height: 100%; object-fit: cover; display: block;
-    }
-    .hud-canvas-overlay {
-      position: absolute; inset: 0; width: 100%; height: 100%;
-      pointer-events: none; z-index: 10;
-    }
-    .scan-line {
-      position: absolute; left: 5%; width: 90%; height: 2px;
+    .viewport-chassis video { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .hud-overlay-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
+    
+    .laser-line {
+      position: absolute; left: 8%; width: 84%; height: 2px;
       background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-      box-shadow: 0 0 12px var(--cyan);
-      animation: scanMove 2s ease-in-out infinite;
-      display: none;
+      box-shadow: 0 0 14px var(--cyan);
+      animation: laser 2.4s ease-in-out infinite;
+      display: none; z-index: 5;
     }
-    .scan-line.active { display: block; }
-    @keyframes scanMove {
-      0%, 100% { top: 15%; }
-      50% { top: 85%; }
+    .laser-line.active { display: block; }
+    @keyframes laser { 0%, 100% { top: 18%; opacity: 0.3; } 50% { top: 82%; opacity: 1; } }
+
+    .viewfinder-reticle {
+      position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 4;
+    }
+    .viewfinder-reticle::before {
+      content: ''; width: 55%; height: 55%; border: 1.5px solid rgba(0, 242, 254, 0.3); border-radius: 12px;
     }
 
-    .progress-section { margin-bottom: 12px; }
-    .progress-header {
+    .timeline-bar {
+      height: 6px; background: rgba(255, 255, 255, 0.08);
+      border-radius: 3px; overflow: hidden; margin-bottom: 6px;
+    }
+    .timeline-fill {
+      height: 100%; background: linear-gradient(90deg, var(--cyan), var(--emerald));
+      width: 0%; transition: width 0.15s linear;
+    }
+    .timeline-labels {
       display: flex; justify-content: space-between;
-      font-size: 0.85rem; font-weight: 600;
-      margin-bottom: 6px;
-    }
-    .progress-track {
-      height: 14px; background: rgba(255,255,255,0.06);
-      border-radius: 7px; overflow: hidden;
-      border: 1px solid var(--border);
-    }
-    .progress-fill {
-      height: 100%; width: 0;
-      background: linear-gradient(90deg, var(--cyan), var(--green));
-      box-shadow: 0 0 10px rgba(0,245,160,0.3);
-      border-radius: 7px;
-      transition: width 0.25s ease;
+      font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-secondary);
+      margin-bottom: 10px;
     }
 
-    .chunk-grid {
-      display: flex; flex-wrap: wrap; gap: 2px;
-      margin: 10px 0;
-      max-height: 60px; overflow: hidden;
+    .chunk-matrix {
+      display: flex; flex-wrap: wrap; gap: 3px; max-height: 60px; overflow: hidden;
+      padding: 6px; background: rgba(0, 0, 0, 0.25); border-radius: 10px;
+      border: 1px solid var(--border-subtle); margin-bottom: 10px;
     }
-    .chunk-cell {
-      width: 8px; height: 8px;
-      background: rgba(255,255,255,0.06);
-      border-radius: 2px;
-      transition: background 0.2s;
+    .chunk-node {
+      width: 7px; height: 7px; background: rgba(255, 255, 255, 0.06);
+      border-radius: 2px; transition: background 0.2s, box-shadow 0.2s;
     }
-    .chunk-cell.received {
-      background: var(--green);
-      box-shadow: 0 0 4px rgba(0,245,160,0.4);
-    }
+    .chunk-node.received { background: var(--emerald); box-shadow: 0 0 6px var(--emerald); }
 
-    .stats-grid {
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: 8px; font-size: 0.82rem;
+    .telemetry-deck {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+      background: rgba(0, 0, 0, 0.25); border: 1px solid var(--border-subtle);
+      border-radius: 10px; padding: 8px 10px; font-size: 0.78rem;
     }
-    .stat-item {
-      background: rgba(0,0,0,0.2);
-      padding: 8px 10px; border-radius: 8px;
-    }
-    .stat-label { color: var(--muted); margin-bottom: 2px; }
-    .stat-value { font-weight: 700; color: var(--cyan); font-family: 'JetBrains Mono', monospace, system-ui; }
+    .tele-item { display: flex; flex-direction: column; }
+    .tele-label { font-size: 0.65rem; font-family: var(--font-mono); color: var(--text-tertiary); text-transform: uppercase; }
+    .tele-val { font-family: var(--font-mono); font-weight: 700; color: var(--cyan); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-    .btn {
-      width: 100%; padding: 14px;
-      border: none; border-radius: 12px;
-      font-family: inherit; font-weight: 700; font-size: 1rem;
-      cursor: pointer; display: flex; align-items: center;
-      justify-content: center; gap: 8px;
-      transition: all 0.25s ease;
-      text-decoration: none;
+    .btn-tactical {
+      width: 100%; padding: 14px; border: none; border-radius: 12px;
+      font-family: var(--font-sans); font-weight: 700; font-size: 0.95rem;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); text-decoration: none;
     }
-    .btn-start {
-      background: linear-gradient(135deg, var(--cyan), #00a8ff);
-      color: #000;
+    .btn-emerald {
+      background: linear-gradient(135deg, var(--emerald), #00c853);
+      color: #000; box-shadow: 0 4px 20px rgba(0, 245, 160, 0.25);
     }
     .btn-stop {
-      background: linear-gradient(135deg, var(--magenta), #d50000);
-      color: #fff;
+      background: rgba(255, 0, 127, 0.1); border: 1px solid rgba(255, 0, 127, 0.3); color: #ff007f;
     }
-    .btn-download {
-      background: linear-gradient(135deg, var(--green), #00c853);
-      color: #000; font-size: 1.1rem;
-      box-shadow: 0 0 20px rgba(0,245,160,0.3);
-    }
-    .btn:active { transform: scale(0.97); }
     .hidden { display: none !important; }
-
-    #celebration {
-      position: fixed; inset: 0;
-      display: none; align-items: center; justify-content: center;
-      background: rgba(7,10,18,0.85);
-      backdrop-filter: blur(8px);
-      z-index: 100;
-      flex-direction: column; gap: 16px;
-      padding: 24px; text-align: center;
-    }
-    #celebration.show { display: flex; }
-    #celebration h2 { font-size: 2rem; }
-    #celebration .file-name {
-      font-size: 0.9rem; color: var(--cyan);
-      word-break: break-all;
-    }
   </style>
   <script>
-  // Embedded jsQR Engine
   ${jsQRMin}
-  // Embedded fflate Decompression Engine
   ${fflateMin}
   </script>
 </head>
 <body>
 
-  <div class="logo">
-    <div class="logo-icon">⚡</div>
-    <h1>LuxSync Receiver</h1>
+  <div class="brand">
+    <div class="brand-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+      </svg>
+    </div>
+    <div>
+      <div class="brand-text"><h1>LuxSync</h1></div>
+      <div class="brand-sub">Optical Air-Gap Receiver</div>
+    </div>
   </div>
-  <p class="subtitle">Air-Gapped Optical Receiver — Point camera at the screen</p>
 
-  <div class="card">
-    <div id="status-banner" class="status-waiting">
-      Tap "Start Camera" and point at the sender screen
+  <div class="surface-card">
+    <div id="status-pill" class="status-pill status-waiting">
+      <span class="pulse-dot"></span>
+      <span id="status-text">Tap Initialize to activate camera viewfinder</span>
     </div>
 
-    <div class="camera-wrap">
+    <div class="viewport-chassis">
       <video id="cam-video" autoplay playsinline muted></video>
-      <canvas id="cam-hud-canvas" class="hud-canvas-overlay"></canvas>
-      <div class="scan-line" id="scan-line"></div>
+      <canvas id="hud-canvas" class="hud-overlay-canvas"></canvas>
+      <div class="laser-line" id="laser-line"></div>
+      <div class="viewfinder-reticle"></div>
     </div>
 
-    <div class="progress-section">
-      <div class="progress-header">
-        <span id="progress-label">Waiting for signal...</span>
-        <span id="progress-pct">0%</span>
-      </div>
-      <div class="progress-track">
-        <div class="progress-fill" id="progress-fill"></div>
-      </div>
+    <div class="timeline-bar">
+      <div class="timeline-fill" id="progress-fill"></div>
+    </div>
+    <div class="timeline-labels">
+      <span id="progress-label">Awaiting optical stream...</span>
+      <span id="progress-pct" style="color:var(--cyan);">0%</span>
     </div>
 
-    <div class="chunk-grid" id="chunk-grid"></div>
+    <div class="chunk-matrix" id="chunk-grid"></div>
 
-    <div class="stats-grid">
-      <div class="stat-item">
-        <div class="stat-label">File</div>
-        <div class="stat-value" id="stat-file">—</div>
+    <div class="telemetry-deck">
+      <div class="tele-item">
+        <span class="tele-label">File Target</span>
+        <span class="tele-val" id="stat-file">—</span>
       </div>
-      <div class="stat-item">
-        <div class="stat-label">Chunks</div>
-        <div class="stat-value" id="stat-chunks">0 / 0</div>
+      <div class="tele-item">
+        <span class="tele-label">Chunks</span>
+        <span class="tele-val" id="stat-chunks">0 / 0</span>
       </div>
-      <div class="stat-item">
-        <div class="stat-label">Scanned</div>
-        <div class="stat-value" id="stat-scanned">0</div>
+      <div class="tele-item">
+        <span class="tele-label">Total Scans</span>
+        <span class="tele-val" id="stat-scanned">0</span>
       </div>
-      <div class="stat-item">
-        <div class="stat-label">Dupes Skipped</div>
-        <div class="stat-value" id="stat-dupes">0</div>
+      <div class="tele-item">
+        <span class="tele-label">Duplicates</span>
+        <span class="tele-val" id="stat-dupes">0</span>
       </div>
     </div>
   </div>
 
-  <button class="btn btn-start" id="btn-start" onclick="startCamera()">
-    📷 Start Camera
+  <button class="btn-tactical btn-emerald" id="btn-start" onclick="startCamera()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path>
+      <circle cx="12" cy="13" r="3"></circle>
+    </svg>
+    Initialize Camera Scanner
   </button>
-  <button class="btn btn-stop hidden" id="btn-stop" onclick="stopCamera()">
-    ⏹ Stop Camera
+  <button class="btn-tactical btn-stop hidden" id="btn-stop" onclick="stopCamera()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="6" y="6" width="12" height="12"></rect>
+    </svg>
+    Stop Camera Viewfinder
   </button>
-  <a class="btn btn-download hidden" id="btn-download">
-    💾 Save Received File
+  <a class="btn-tactical btn-emerald hidden" id="btn-download">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+      <polyline points="7 10 12 15 17 10"></polyline>
+      <line x1="12" y1="15" x2="12" y2="3"></line>
+    </svg>
+    Save Reconstructed File
   </a>
-
-  <!-- Celebration Overlay -->
-  <div id="celebration">
-    <h2>🎉 Transfer Complete!</h2>
-    <p>File received via light & ready to open.</p>
-    <p class="file-name" id="cel-filename"></p>
-    <a class="btn btn-download" id="cel-download" style="max-width:300px">
-      💾 Save File
-    </a>
-  </div>
 
   <script>
     function getMimeType(filename) {
       const ext = (filename.split('.').pop() || '').toLowerCase();
       const map = {
-        pdf: 'application/pdf',
-        png: 'image/png',
-        jpg: 'image/jpeg',
-        jpeg: 'image/jpeg',
-        gif: 'image/gif',
-        webp: 'image/webp',
-        svg: 'image/svg+xml',
-        mp4: 'video/mp4',
-        mov: 'video/quicktime',
-        mp3: 'audio/mpeg',
-        wav: 'audio/wav',
-        txt: 'text/plain',
-        html: 'text/html',
-        css: 'text/css',
-        js: 'text/javascript',
-        json: 'application/json',
-        zip: 'application/zip',
-        docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        pdf: 'application/pdf', png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg',
+        gif: 'image/gif', webp: 'image/webp', svg: 'image/svg+xml', mp4: 'video/mp4',
+        mov: 'video/quicktime', mp3: 'audio/mpeg', wav: 'audio/wav', txt: 'text/plain',
+        html: 'text/html', css: 'text/css', js: 'text/javascript', json: 'application/json',
+        zip: 'application/zip', docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-        doc: 'application/msword',
-        xls: 'application/vnd.ms-excel',
-        ppt: 'application/vnd.ms-powerpoint'
+        pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
       };
       return map[ext] || 'application/octet-stream';
     }
 
     const video = document.getElementById('cam-video');
-    const hudCanvas = document.getElementById('cam-hud-canvas');
+    const hudCanvas = document.getElementById('hud-canvas');
     const hudCtx = hudCanvas.getContext('2d');
-    const scanLine = document.getElementById('scan-line');
+    const laserLine = document.getElementById('laser-line');
     const progressFill = document.getElementById('progress-fill');
     const progressLabel = document.getElementById('progress-label');
     const progressPct = document.getElementById('progress-pct');
-    const statusBanner = document.getElementById('status-banner');
+    const statusPill = document.getElementById('status-pill');
+    const statusText = document.getElementById('status-text');
     const chunkGrid = document.getElementById('chunk-grid');
     const statFile = document.getElementById('stat-file');
     const statChunks = document.getElementById('stat-chunks');
@@ -332,14 +296,9 @@ const htmlContent = `<!DOCTYPE html>
     const btnStart = document.getElementById('btn-start');
     const btnStop = document.getElementById('btn-stop');
     const btnDownload = document.getElementById('btn-download');
-    const celebration = document.getElementById('celebration');
-    const celFilename = document.getElementById('cel-filename');
-    const celDownload = document.getElementById('cel-download');
 
     let stream = null;
     let scanning = false;
-
-    // Transfer state
     let chunks = {};
     let totalChunks = 0;
     let receivedCount = 0;
@@ -356,29 +315,23 @@ const htmlContent = `<!DOCTYPE html>
     }
 
     function setStatus(text, cls) {
-      statusBanner.textContent = text;
-      statusBanner.className = cls;
+      statusText.textContent = text;
+      statusPill.className = 'status-pill ' + cls;
     }
 
     async function startCamera() {
       try {
         stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: { ideal: 'environment' },
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-            frameRate: { ideal: 30 }
-          }
+          video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 } }
         });
-
         video.srcObject = stream;
         await video.play();
 
         scanning = true;
-        scanLine.classList.add('active');
+        laserLine.classList.add('active');
         btnStart.classList.add('hidden');
         btnStop.classList.remove('hidden');
-        setStatus('Scanning... Point camera at sender screen', 'status-scanning');
+        setStatus('Optical lock active. Point camera at screen.', 'status-scanning');
 
         chunks = {}; totalChunks = 0; receivedCount = 0;
         totalScans = 0; dupeScans = 0; transferComplete = false;
@@ -388,21 +341,18 @@ const htmlContent = `<!DOCTYPE html>
 
         scanLoop();
       } catch (e) {
-        setStatus('📷 Camera error: ' + e.message, 'status-error');
+        setStatus('Camera error: ' + e.message, 'status-waiting');
       }
     }
 
     function stopCamera() {
       scanning = false;
-      scanLine.classList.remove('active');
-      if (stream) {
-        stream.getTracks().forEach(t => t.stop());
-        stream = null;
-      }
+      laserLine.classList.remove('active');
+      if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
       btnStop.classList.add('hidden');
       if (!transferComplete) {
         btnStart.classList.remove('hidden');
-        setStatus('Camera stopped. Tap Start to resume.', 'status-waiting');
+        setStatus('Camera stopped.', 'status-waiting');
       }
     }
 
@@ -430,7 +380,6 @@ const htmlContent = `<!DOCTYPE html>
 
         let foundQR = false;
 
-        // 1. Hardware BarcodeDetector
         if (detector) {
           try {
             const results = await detector.detect(scanCanvas);
@@ -446,13 +395,10 @@ const htmlContent = `<!DOCTYPE html>
           } catch (e) {}
         }
 
-        // 2. High-speed jsQR (<10ms)
         if (!foundQR && typeof jsQR === 'function') {
           try {
             const imageData = scanCtx.getImageData(0, 0, w, h);
-            const code = jsQR(imageData.data, w, h, {
-              inversionAttempts: 'dontInvert'
-            });
+            const code = jsQR(imageData.data, w, h, { inversionAttempts: 'dontInvert' });
             if (code && code.data && code.data.startsWith('LX|')) {
               totalScans++;
               statScanned.textContent = totalScans;
@@ -463,25 +409,20 @@ const htmlContent = `<!DOCTYPE html>
         }
       }
 
-      if (scanning && !transferComplete) {
-        requestAnimationFrame(scanLoop);
-      }
+      if (scanning && !transferComplete) requestAnimationFrame(scanLoop);
     }
 
     function drawQRBoundingBox(points, srcW, srcH, dstW, dstH) {
       if (!points || points.length < 4) return;
       const scaleX = dstW / srcW;
       const scaleY = dstH / srcH;
-
       hudCtx.strokeStyle = '#00f5a0';
       hudCtx.lineWidth = 4;
       hudCtx.shadowColor = '#00f5a0';
-      hudCtx.shadowBlur = 10;
+      hudCtx.shadowBlur = 12;
       hudCtx.beginPath();
       hudCtx.moveTo(points[0].x * scaleX, points[0].y * scaleY);
-      for (let i = 1; i < points.length; i++) {
-        hudCtx.lineTo(points[i].x * scaleX, points[i].y * scaleY);
-      }
+      for (let i = 1; i < points.length; i++) hudCtx.lineTo(points[i].x * scaleX, points[i].y * scaleY);
       hudCtx.closePath();
       hudCtx.stroke();
       hudCtx.shadowBlur = 0;
@@ -491,11 +432,10 @@ const htmlContent = `<!DOCTYPE html>
       if (!loc) return;
       const scaleX = dstW / srcW;
       const scaleY = dstH / srcH;
-
       hudCtx.strokeStyle = '#00f5a0';
       hudCtx.lineWidth = 4;
       hudCtx.shadowColor = '#00f5a0';
-      hudCtx.shadowBlur = 10;
+      hudCtx.shadowBlur = 12;
       hudCtx.beginPath();
       hudCtx.moveTo(loc.topLeftCorner.x * scaleX, loc.topLeftCorner.y * scaleY);
       hudCtx.lineTo(loc.topRightCorner.x * scaleX, loc.topRightCorner.y * scaleY);
@@ -512,7 +452,6 @@ const htmlContent = `<!DOCTYPE html>
       if (parts.length < 5) return;
 
       let idx, total, name, data;
-
       if (parts.length >= 7) {
         idx = parseInt(parts[1], 10);
         total = parseInt(parts[2], 10);
@@ -533,7 +472,7 @@ const htmlContent = `<!DOCTYPE html>
         totalChunks = total;
         fileName = name || 'received_file';
         statFile.textContent = fileName;
-        setStatus('Receiving data stream...', 'status-receiving');
+        setStatus('Capturing optical data stream...', 'status-receiving');
         buildChunkGrid(total);
       }
 
@@ -545,93 +484,67 @@ const htmlContent = `<!DOCTYPE html>
 
       chunks[idx] = data;
       receivedCount++;
-
-      if (navigator.vibrate) navigator.vibrate(20);
+      if (navigator.vibrate) navigator.vibrate(25);
 
       const pct = Math.floor((receivedCount / totalChunks) * 100);
       progressFill.style.width = pct + '%';
       progressPct.textContent = pct + '%';
-      progressLabel.textContent = \`Receiving frame \${receivedCount} of \${totalChunks}\`;
-      statChunks.textContent = \`\${receivedCount} / \${totalChunks}\`;
+      progressLabel.textContent = 'Frame ' + receivedCount + ' of ' + totalChunks;
+      statChunks.textContent = receivedCount + ' / ' + totalChunks;
 
-      const cell = document.getElementById('cg-' + idx);
-      if (cell) cell.classList.add('received');
+      const node = document.getElementById('cg-' + idx);
+      if (node) node.classList.add('received');
 
-      if (receivedCount >= totalChunks) {
-        finishTransfer();
-      }
+      if (receivedCount >= totalChunks) finishTransfer();
     }
 
     function buildChunkGrid(total) {
       chunkGrid.innerHTML = '';
       const display = Math.min(total, 300);
       for (let i = 0; i < display; i++) {
-        const cell = document.createElement('div');
-        cell.className = 'chunk-cell';
-        cell.id = 'cg-' + i;
-        chunkGrid.appendChild(cell);
+        const node = document.createElement('div');
+        node.className = 'chunk-node';
+        node.id = 'cg-' + i;
+        chunkGrid.appendChild(node);
       }
     }
 
     function finishTransfer() {
       transferComplete = true;
       stopCamera();
-
-      setStatus('✅ File received! Preparing download...', 'status-done');
+      setStatus('Transfer complete! File reconstructed.', 'status-done');
       progressFill.style.width = '100%';
       progressPct.textContent = '100%';
-      progressLabel.textContent = 'Complete!';
+      progressLabel.textContent = 'Complete';
 
       let fullBase64 = '';
-      for (let i = 0; i < totalChunks; i++) {
-        fullBase64 += chunks[i] || '';
-      }
+      for (let i = 0; i < totalChunks; i++) fullBase64 += chunks[i] || '';
 
       try {
-        const binaryStr = atob(fullBase64);
-        let bytes = new Uint8Array(binaryStr.length);
-        for (let i = 0; i < binaryStr.length; i++) {
-          bytes[i] = binaryStr.charCodeAt(i);
-        }
+        const bin = atob(fullBase64);
+        let bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
 
-        if (isCompressed && typeof fflate !== 'undefined' && fflate.decompressSync) {
+        if (isCompressed && fflate && fflate.decompressSync) {
           bytes = fflate.decompressSync(bytes);
         }
 
         const mimeType = getMimeType(fileName);
         const blob = new Blob([bytes], { type: mimeType });
         const url = URL.createObjectURL(blob);
-
         btnDownload.href = url;
         btnDownload.download = fileName;
         btnDownload.classList.remove('hidden');
 
-        celDownload.href = url;
-        celDownload.download = fileName;
-        celFilename.textContent = fileName + ' (' + formatBytes(bytes.length) + ')';
-        celebration.classList.add('show');
-
         if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
       } catch (e) {
-        setStatus('⚠ Error processing file: ' + e.message, 'status-error');
+        setStatus('Error: ' + e.message, 'status-waiting');
       }
     }
-
-    function formatBytes(bytes) {
-      if (bytes < 1024) return bytes + ' B';
-      if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-      return (bytes / 1048576).toFixed(1) + ' MB';
-    }
-
-    celebration.addEventListener('click', (e) => {
-      if (e.target === celebration) {
-        celebration.classList.remove('show');
-      }
-    });
   </script>
 </body>
 </html>
 `;
 
 fs.writeFileSync(path.join(__dirname, '../public/receiver.html'), htmlContent);
-console.log('Successfully rebuilt receiver.html with MIME type preservation!');
+console.log('Successfully generated Studio-Grade receiver.html!');

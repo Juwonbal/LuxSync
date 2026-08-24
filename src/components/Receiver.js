@@ -1,5 +1,5 @@
 /**
- * LuxSync Receiver Component v8 — Exact MIME Type & Full Filename Preservation
+ * LuxSync Receiver Component v9 — Studio Viewfinder & Native Share
  */
 
 import jsQR from 'jsqr';
@@ -50,78 +50,89 @@ export function createReceiver(container) {
   let totalScans = 0;
   let dupeScans = 0;
   let transferComplete = false;
+  let receivedBlobUrl = null;
 
   container.innerHTML = `
-    <div class="card glass-panel">
-      <div class="card-header">
-        <h2>📷 Optical Receiver <span class="badge badge-success">Live HUD</span></h2>
-        <span class="badge badge-success">Receiver</span>
+    <div class="surface-panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--emerald)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path>
+            <circle cx="12" cy="13" r="3"></circle>
+          </svg>
+          <h2>Optical Receiver</h2>
+        </div>
+        <span class="tag-pill tag-emerald">Viewfinder</span>
       </div>
 
-      <div id="rx-status-banner" class="status-banner status-waiting">
-        Tap "Start Camera" and point at the sender screen
+      <!-- Status Banner -->
+      <div id="rx-status-banner" class="status-pill-banner status-waiting">
+        <span class="pulse-dot"></span>
+        <span id="rx-status-text">Tap "Start Camera" and point at the transmitter screen</span>
       </div>
 
-      <!-- Camera Feed with HUD Overlay -->
-      <div class="camera-wrap margin-top">
+      <!-- Camera Viewport Chassis -->
+      <div class="viewport-chassis">
         <video id="rx-video" autoplay playsinline muted></video>
-        <canvas id="rx-hud-canvas" class="hud-canvas-overlay"></canvas>
-        <div class="scan-line" id="rx-scan-line"></div>
+        <canvas id="rx-hud-canvas" class="hud-overlay-canvas"></canvas>
+        <div class="laser-scanner-line" id="rx-scan-line"></div>
+        <div class="viewfinder-reticle"></div>
       </div>
 
-      <!-- Progress -->
-      <div class="progress-section margin-top">
-        <div class="progress-header">
-          <span id="rx-progress-label">Waiting for signal...</span>
-          <span id="rx-progress-pct">0%</span>
+      <!-- Progress Section -->
+      <div class="timeline-bar margin-top">
+        <div id="rx-progress-fill" class="timeline-progress" style="width: 0%"></div>
+      </div>
+      <div class="timeline-labels">
+        <span id="rx-progress-label">Awaiting optical signal...</span>
+        <span id="rx-progress-pct" class="text-cyan">0%</span>
+      </div>
+
+      <!-- Live Chunk Pixel Map -->
+      <div class="chunk-matrix" id="rx-chunk-grid"></div>
+
+      <!-- Telemetry Grid -->
+      <div class="telemetry-deck">
+        <div class="telemetry-stat">
+          <span class="stat-header">File Target</span>
+          <span class="stat-figure" id="rx-stat-file" style="font-size: 0.82rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">—</span>
         </div>
-        <div class="progress-bar-bg">
-          <div id="rx-progress-fill" class="progress-bar-fill" style="width: 0%"></div>
+        <div class="telemetry-stat">
+          <span class="stat-header">Chunks Captured</span>
+          <span class="stat-figure" id="rx-stat-chunks">0 / 0</span>
+        </div>
+        <div class="telemetry-stat">
+          <span class="stat-header">Total Scans</span>
+          <span class="stat-figure" id="rx-stat-scanned">0</span>
+        </div>
+        <div class="telemetry-stat">
+          <span class="stat-header">Duplicates</span>
+          <span class="stat-figure" id="rx-stat-dupes">0</span>
         </div>
       </div>
 
-      <!-- Chunk Grid -->
-      <div class="chunk-grid margin-top" id="rx-chunk-grid"></div>
-
-      <!-- Stats -->
-      <div class="stats-grid margin-top">
-        <div class="stat-item">
-          <div class="stat-label">File</div>
-          <div class="stat-value" id="rx-stat-file">—</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-label">Chunks</div>
-          <div class="stat-value" id="rx-stat-chunks">0 / 0</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-label">Scanned</div>
-          <div class="stat-value" id="rx-stat-scanned">0</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-label">Dupes Skipped</div>
-          <div class="stat-value" id="rx-stat-dupes">0</div>
-        </div>
-      </div>
-
-      <!-- Actions -->
-      <div class="action-bar margin-top">
-        <button id="rx-start-btn" class="btn btn-glow btn-success">
-          📷 Start Camera
+      <!-- Action Buttons -->
+      <div class="transport-bar margin-top">
+        <button id="rx-start-btn" class="btn-tactical btn-emerald-laser btn-lg btn-block">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path>
+            <circle cx="12" cy="13" r="3"></circle>
+          </svg>
+          Initialize Camera Scanner
         </button>
-        <button id="rx-stop-btn" class="btn btn-danger hidden">
-          ⏹ Stop Camera
+        <button id="rx-stop-btn" class="btn-tactical btn-danger-glass btn-block hidden">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="6" y="6" width="12" height="12"></rect>
+          </svg>
+          Stop Camera Viewfinder
         </button>
-        <a id="rx-download-btn" class="btn btn-glow btn-cyan hidden">
-          💾 Save Received File
-        </a>
-      </div>
-
-      <!-- Standalone Receiver Info -->
-      <div class="info-banner margin-top">
-        <h4>📦 Want to use this without a network?</h4>
-        <p>Download the standalone receiver HTML file and open it directly in your phone's browser. No network needed — ever.</p>
-        <a class="btn btn-outline" href="/receiver.html" download="LuxSync_Receiver.html">
-          ⬇ Download LuxSync_Receiver.html
+        <a id="rx-download-btn" class="btn-tactical btn-emerald-laser btn-lg btn-block hidden">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Save Reconstructed File
         </a>
       </div>
     </div>
@@ -132,6 +143,7 @@ export function createReceiver(container) {
   const hudCtx = hudCanvas.getContext('2d');
   const scanLine = container.querySelector('#rx-scan-line');
   const statusBanner = container.querySelector('#rx-status-banner');
+  const statusText = container.querySelector('#rx-status-text');
   const progressFill = container.querySelector('#rx-progress-fill');
   const progressLabel = container.querySelector('#rx-progress-label');
   const progressPct = container.querySelector('#rx-progress-pct');
@@ -171,7 +183,7 @@ export function createReceiver(container) {
       startBtn.classList.add('hidden');
       stopBtn.classList.remove('hidden');
       downloadBtn.classList.add('hidden');
-      setStatus('Scanning... Point camera at sender screen', 'status-scanning');
+      setStatus('Optical lock active. Point camera at sender screen.', 'status-scanning');
 
       chunks = {}; totalChunks = 0; receivedCount = 0;
       totalScans = 0; dupeScans = 0; transferComplete = false;
@@ -181,7 +193,7 @@ export function createReceiver(container) {
 
       scanLoop();
     } catch (e) {
-      setStatus('Camera error: ' + e.message, 'status-error');
+      setStatus('Camera access error: ' + e.message, 'status-waiting');
     }
   }
 
@@ -192,7 +204,7 @@ export function createReceiver(container) {
     stopBtn.classList.add('hidden');
     if (!transferComplete) {
       startBtn.classList.remove('hidden');
-      setStatus('Camera stopped.', 'status-waiting');
+      setStatus('Camera stopped. Tap Initialize to resume.', 'status-waiting');
     }
   }
 
@@ -233,7 +245,7 @@ export function createReceiver(container) {
         } catch (e) {}
       }
 
-      // 2. jsQR Engine
+      // 2. jsQR Fallback Engine
       if (!foundQR) {
         try {
           const imageData = scanCtx.getImageData(0, 0, w, h);
@@ -264,7 +276,7 @@ export function createReceiver(container) {
     hudCtx.strokeStyle = '#00f5a0';
     hudCtx.lineWidth = 4;
     hudCtx.shadowColor = '#00f5a0';
-    hudCtx.shadowBlur = 10;
+    hudCtx.shadowBlur = 12;
     hudCtx.beginPath();
     hudCtx.moveTo(points[0].x * scaleX, points[0].y * scaleY);
     for (let i = 1; i < points.length; i++) {
@@ -283,7 +295,7 @@ export function createReceiver(container) {
     hudCtx.strokeStyle = '#00f5a0';
     hudCtx.lineWidth = 4;
     hudCtx.shadowColor = '#00f5a0';
-    hudCtx.shadowBlur = 10;
+    hudCtx.shadowBlur = 12;
     hudCtx.beginPath();
     hudCtx.moveTo(loc.topLeftCorner.x * scaleX, loc.topLeftCorner.y * scaleY);
     hudCtx.lineTo(loc.topRightCorner.x * scaleX, loc.topRightCorner.y * scaleY);
@@ -321,7 +333,7 @@ export function createReceiver(container) {
       totalChunks = total;
       fileName = name || 'received_file';
       statFile.textContent = fileName;
-      setStatus('Receiving data stream via light...', 'status-receiving');
+      setStatus('Capturing optical data stream...', 'status-receiving');
       buildGrid(total);
     }
 
@@ -333,7 +345,7 @@ export function createReceiver(container) {
 
     chunks[idx] = data;
     receivedCount++;
-    if (navigator.vibrate) navigator.vibrate(20);
+    if (navigator.vibrate) navigator.vibrate(25);
 
     const pct = Math.floor((receivedCount / totalChunks) * 100);
     progressFill.style.width = pct + '%';
@@ -341,8 +353,8 @@ export function createReceiver(container) {
     progressLabel.textContent = `Frame ${receivedCount} of ${totalChunks}`;
     statChunks.textContent = `${receivedCount} / ${totalChunks}`;
 
-    const cell = document.getElementById('rxcg-' + idx);
-    if (cell) cell.classList.add('received');
+    const node = document.getElementById('rxcg-' + idx);
+    if (node) node.classList.add('received');
 
     if (receivedCount >= totalChunks) finishTransfer();
   }
@@ -351,20 +363,20 @@ export function createReceiver(container) {
     chunkGrid.innerHTML = '';
     const display = Math.min(total, 300);
     for (let i = 0; i < display; i++) {
-      const cell = document.createElement('div');
-      cell.className = 'chunk-cell';
-      cell.id = 'rxcg-' + i;
-      chunkGrid.appendChild(cell);
+      const node = document.createElement('div');
+      node.className = 'chunk-node';
+      node.id = 'rxcg-' + i;
+      chunkGrid.appendChild(node);
     }
   }
 
   function finishTransfer() {
     transferComplete = true;
     stopCamera();
-    setStatus('✅ File received! Preparing download...', 'status-done');
+    setStatus('Transfer complete! File reconstructed.', 'status-done');
     progressFill.style.width = '100%';
     progressPct.textContent = '100%';
-    progressLabel.textContent = 'Complete!';
+    progressLabel.textContent = 'Complete';
 
     let fullBase64 = '';
     for (let i = 0; i < totalChunks; i++) fullBase64 += chunks[i] || '';
@@ -380,19 +392,20 @@ export function createReceiver(container) {
 
       const mimeType = getMimeType(fileName);
       const blob = new Blob([bytes], { type: mimeType });
-      const url = URL.createObjectURL(blob);
-      downloadBtn.href = url;
+      receivedBlobUrl = URL.createObjectURL(blob);
+      downloadBtn.href = receivedBlobUrl;
       downloadBtn.download = fileName;
       downloadBtn.classList.remove('hidden');
+
       if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
     } catch (e) {
-      setStatus('Error processing file: ' + e.message, 'status-error');
+      setStatus('Error reconstructing file: ' + e.message, 'status-waiting');
     }
   }
 
   function setStatus(text, cls) {
-    statusBanner.textContent = text;
-    statusBanner.className = 'status-banner ' + cls;
+    statusText.textContent = text;
+    statusBanner.className = 'status-pill-banner ' + cls;
   }
 
   return { destroy: () => { stopCamera(); } };
